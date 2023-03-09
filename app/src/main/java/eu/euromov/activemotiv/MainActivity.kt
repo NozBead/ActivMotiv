@@ -5,15 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import eu.euromov.activemotiv.ui.theme.LockScreenManipulatorTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,7 +30,10 @@ class MainActivity : ComponentActivity() {
                 )
                 {
                     Box(contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
                             Image(
                                 painter = painterResource(id = R.drawable.wallpaper),
                                 contentDescription = stringResource(id = R.string.wallpaper_desc),
