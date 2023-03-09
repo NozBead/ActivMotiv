@@ -12,12 +12,12 @@ import android.os.IBinder
 import android.widget.Toast
 
 class PopUpService : Service() {
-    private val reciever = StartActivityReciever()
+    private val receiver = StartActivityReceiver()
 
     override fun onCreate() {
         Toast.makeText(this, "Create Service", Toast.LENGTH_SHORT).show()
         val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
-        applicationContext.registerReceiver(reciever, filter)
+        applicationContext.registerReceiver(receiver, filter)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -39,7 +39,7 @@ class PopUpService : Service() {
     }
 
     override fun onDestroy() {
-        applicationContext.unregisterReceiver(reciever)
+        applicationContext.unregisterReceiver(receiver)
         Toast.makeText(this, "Destroy service", Toast.LENGTH_SHORT).show()
     }
 

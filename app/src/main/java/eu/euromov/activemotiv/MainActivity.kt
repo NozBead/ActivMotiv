@@ -5,11 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -29,17 +31,25 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 )
                 {
-                    Box(contentAlignment = Alignment.Center) {
+                    Box(
+                        //contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                            .clickable { finish() }
+                    ) {
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.SpaceEvenly
                             ) {
                             Image(
-                                painter = painterResource(id = R.drawable.wallpaper),
+                                painter = painterResource(id = R.drawable.chien),
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.weight(1f),
                                 contentDescription = stringResource(id = R.string.wallpaper_desc),
                             )
                             Image(
-                                painter = painterResource(id = R.drawable.wallpaper),
+                                painter = painterResource(id = R.drawable.sport),
+                                modifier = Modifier.weight(1f),
+                                contentScale = ContentScale.Crop,
                                 contentDescription = stringResource(id = R.string.wallpaper_desc),
                             )
                         }
