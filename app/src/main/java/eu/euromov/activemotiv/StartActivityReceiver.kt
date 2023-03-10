@@ -9,7 +9,6 @@ import android.widget.Toast
 class StartActivityReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        Toast.makeText(context, "Start activity", Toast.LENGTH_SHORT).show()
         val startIntent = Intent(context, MainActivity::class.java)
         startIntent.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
         context.startActivity(startIntent)
