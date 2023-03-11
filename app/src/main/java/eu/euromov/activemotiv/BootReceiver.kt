@@ -6,8 +6,10 @@ import android.content.Intent
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val serviceIntent = Intent()
-        serviceIntent.setClass(context, PopUpService::class.java)
-        context.startForegroundService(serviceIntent)
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+            val serviceIntent = Intent()
+            serviceIntent.setClass(context, PopUpService::class.java)
+            context.startForegroundService(serviceIntent)
+        }
     }
 }

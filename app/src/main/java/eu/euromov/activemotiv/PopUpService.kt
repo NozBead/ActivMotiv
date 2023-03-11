@@ -12,7 +12,7 @@ import android.os.IBinder
 import android.widget.Toast
 
 class PopUpService : Service() {
-    private val receiver = StartActivityReceiver()
+    private val receiver = ScreenOnReceiver()
 
     override fun onCreate() {
         Toast.makeText(this, "Create Service", Toast.LENGTH_SHORT).show()
@@ -35,7 +35,7 @@ class PopUpService : Service() {
             .build()
 
         startForeground(2, notification)
-        return START_STICKY;
+        return START_STICKY
     }
 
     override fun onDestroy() {
