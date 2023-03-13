@@ -3,6 +3,7 @@ package eu.euromov.activemotiv
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import eu.euromov.activemotiv.ui.MainActivity
 
 class ScreenOnReceiver : BroadcastReceiver() {
 

@@ -1,4 +1,4 @@
-package eu.euromov.activemotiv
+package eu.euromov.activemotiv.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,14 +10,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import eu.euromov.activemotiv.ui.theme.LockScreenManipulatorTheme
+import eu.euromov.activemotiv.PopUpService
+import eu.euromov.activemotiv.R
+import eu.euromov.activemotiv.ui.theme.ActiveMotivTheme
 
 class MainActivity : ComponentActivity() {
     private fun startPopupService() {
@@ -30,19 +30,13 @@ class MainActivity : ComponentActivity() {
         startPopupService()
 
         setContent {
-            LockScreenManipulatorTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                )
-                {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable { finish() }
-                    ) {
-                       StackedImages()
-                    }
+            ActiveMotivTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { finish() }
+                ) {
+                   StackedImages()
                 }
             }
         }

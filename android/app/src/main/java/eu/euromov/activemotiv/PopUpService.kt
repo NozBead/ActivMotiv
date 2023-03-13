@@ -15,14 +15,13 @@ class PopUpService : Service() {
     private val receiver = ScreenOnReceiver()
 
     override fun onCreate() {
-        Toast.makeText(this, "Create Service", Toast.LENGTH_SHORT).show()
         val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
         applicationContext.registerReceiver(receiver, filter)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE_DEFAULT).apply {
-            description = "Bienvenue le channel de fous"
+            description = "ActiveMotiv Notification Channel"
         }
 
         val notificationManager: NotificationManager =
@@ -40,7 +39,6 @@ class PopUpService : Service() {
 
     override fun onDestroy() {
         applicationContext.unregisterReceiver(receiver)
-        Toast.makeText(this, "Destroy service", Toast.LENGTH_SHORT).show()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
