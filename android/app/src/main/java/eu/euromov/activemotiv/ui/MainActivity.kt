@@ -2,6 +2,7 @@ package eu.euromov.activemotiv.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -15,19 +16,50 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import eu.euromov.activemotiv.PopUpService
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
+import eu.euromov.activemotiv.service.PopUpService
 import eu.euromov.activemotiv.R
+import eu.euromov.activemotiv.database.UnlockDatabase
+import eu.euromov.activemotiv.model.Unlock
 import eu.euromov.activemotiv.ui.theme.ActiveMotivTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private var exposureTime : Long = 0
+    private var unlockDatabase : UnlockDatabase? = null
+
+    private fun createDatabase() : UnlockDatabase {
+        return Room.databaseBuilder(
+            applicationContext,
+            UnlockDatabase::class.java, "Unlock Database"
+        ).build()
+    }
+
     private fun startPopupService() {
         val serviceIntent = Intent()
         serviceIntent.setClass(baseContext, PopUpService::class.java)
         baseContext.startForegroundService(serviceIntent)
     }
+
+    private fun startExposureClock() {
+        Log.i("ClockDeFous", "start")
+        exposureTime = System.currentTimeMillis()
+    }
+
+    private fun stopExposureClock() {
+        Log.i("ClockDeFous", "stop")
+        val currentTime = System.currentTimeMillis()
+        exposureTime = currentTime - exposureTime
+        val unlock = Unlock(0, currentTime, exposureTime, false)
+        unlockDatabase?.unlockDao()?.insert(unlock)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         startPopupService()
+        unlockDatabase = createDatabase()
 
         setContent {
             ActiveMotivTheme {
@@ -39,6 +71,19 @@ class MainActivity : ComponentActivity() {
                    StackedImages()
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startExposureClock()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            stopExposureClock()
         }
     }
 }

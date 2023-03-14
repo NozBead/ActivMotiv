@@ -1,4 +1,4 @@
-package eu.euromov.activemotiv
+package eu.euromov.activemotiv.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context

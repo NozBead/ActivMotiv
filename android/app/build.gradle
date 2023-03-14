@@ -47,8 +47,15 @@ android {
 }
 
 dependencies {
+    apply plugin: 'kotlin-kapt'
+
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
+
+    kapt "androidx.room:room-compiler:$room_version"
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+
 
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.activity:activity-compose:1.6.1'

@@ -1,4 +1,4 @@
-package eu.euromov.activemotiv
+package eu.euromov.activemotiv.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,7 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
-import android.widget.Toast
+import eu.euromov.activemotiv.R
+import eu.euromov.activemotiv.receiver.ScreenOnReceiver
 
 class PopUpService : Service() {
     private val receiver = ScreenOnReceiver()
