@@ -1,9 +1,9 @@
-package eu.euromov.activemotiv.dao
+package eu.euromov.activmotiv.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import eu.euromov.activemotiv.model.Unlock
+import eu.euromov.activmotiv.model.Unlock
 
 @Dao
 interface UnlockDao {

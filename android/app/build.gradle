@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'eu.euromov.activemotiv'
+    namespace 'eu.euromov.activmotiv'
     compileSdk 33
 
     defaultConfig {
-        applicationId "eu.euromov.activemotiv"
+        applicationId "eu.euromov.activmotiv"
         minSdk 26
         targetSdk 33
         versionCode 1

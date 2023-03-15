@@ -1,12 +1,11 @@
-package eu.euromov.activemotiv.receiver
+package eu.euromov.activmotiv.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import eu.euromov.activemotiv.ui.MainActivity
+import eu.euromov.activmotiv.ui.MainActivity
 
 class ScreenOnReceiver : BroadcastReceiver() {
-
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_SCREEN_ON) {
             val startIntent = Intent(context, MainActivity::class.java)

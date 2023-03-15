@@ -1,4 +1,4 @@
-package eu.euromov.activemotiv.ui.theme
+package eu.euromov.activmotiv.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

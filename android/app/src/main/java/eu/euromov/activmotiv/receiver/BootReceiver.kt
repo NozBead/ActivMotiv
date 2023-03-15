@@ -1,9 +1,9 @@
-package eu.euromov.activemotiv.receiver
+package eu.euromov.activmotiv.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import eu.euromov.activemotiv.service.PopUpService
+import eu.euromov.activmotiv.service.PopUpService
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

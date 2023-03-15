@@ -1,4 +1,4 @@
-package eu.euromov.activemotiv.ui
+package eu.euromov.activmotiv.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -18,11 +18,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
-import eu.euromov.activemotiv.service.PopUpService
-import eu.euromov.activemotiv.R
-import eu.euromov.activemotiv.database.UnlockDatabase
-import eu.euromov.activemotiv.model.Unlock
-import eu.euromov.activemotiv.ui.theme.ActiveMotivTheme
+import eu.euromov.activmotiv.R
+import eu.euromov.activmotiv.service.PopUpService
+import eu.euromov.activmotiv.database.UnlockDatabase
+import eu.euromov.activmotiv.model.Unlock
+import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -44,12 +44,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startExposureClock() {
-        Log.i("ClockDeFous", "start")
         exposureTime = System.currentTimeMillis()
     }
 
     private fun stopExposureClock() {
-        Log.i("ClockDeFous", "stop")
         val currentTime = System.currentTimeMillis()
         exposureTime = currentTime - exposureTime
         val unlock = Unlock(0, currentTime, exposureTime, false)
@@ -62,7 +60,7 @@ class MainActivity : ComponentActivity() {
         unlockDatabase = createDatabase()
 
         setContent {
-            ActiveMotivTheme {
+            ActivMotivTheme {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

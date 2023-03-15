@@ -1,4 +1,4 @@
-package eu.euromov.activemotiv.model
+package eu.euromov.activmotiv.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
