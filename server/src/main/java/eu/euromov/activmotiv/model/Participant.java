@@ -3,7 +3,6 @@ package eu.euromov.activmotiv.model;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,9 +15,7 @@ public class Participant {
 	@GeneratedValue
 	private int id;
 	
-	@JsonProperty(required = true)
 	private String firstname;
-	@JsonProperty(required = true)
 	private String lastname;
 	
 	public int getId() {
