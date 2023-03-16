@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - run: cd server
       - run: docker build -t ghcr.io/nozbead/activmotiv .
   deploy:
     runs-on: ubuntu-latest
