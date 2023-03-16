@@ -15,4 +15,4 @@ jobs:
         with:
           context: server
           push: true
-          tags: ghcr.io/nozbead/activmotiv/activmotiv:latest
+          tags: ghcr.io/nozbead/activmotiv:latest
