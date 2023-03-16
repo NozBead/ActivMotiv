@@ -1,4 +1,4 @@
-FROM maven:3.9.0-eclipse-temurin-17 AS builder
+FROM --platform=arm64v8 maven:3.9.0-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY src src
 RUN --mount=type=cache,target=/root/.m2/repository \
   mvn package 
 
-FROM eclipse-temurin:17-jre
+FROM --platform=arm64v8 eclipse-temurin:17-jre
 
 WORKDIR /app
 
