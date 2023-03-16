@@ -1,0 +1,13 @@
+name: build-and-deploy
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker build -t ghcr.io/NozBead/activmotiv .
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo $GITHUB_TOKEN | docker login ghcr.io -u NozBead --password-stdin
+      - run: docker push ghcr.io/NozBead/activmotiv:latest
