@@ -1,14 +1,18 @@
 name: build-and-deploy
 on: [push]
 jobs:
-  build:
+  push_to_registry:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: cd server
-      - run: docker build -t ghcr.io/nozbead/activmotiv .
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo $GITHUB_TOKEN | docker login ghcr.io -u NozBead --password-stdin
-      - run: docker push ghcr.io/nozbead/activmotiv:latest
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: docker/build-push-action@v4
+        with:
+          context: server
+          push: true
+          tags: ghcr.io/nozbead/activemotiv:latest
