@@ -4,6 +4,6 @@ import org.springframework.data.repository.CrudRepository;
 
 import eu.euromov.activmotiv.model.Participant;
 
-public interface ParticipantRepository extends CrudRepository<Participant, Integer> {
+public interface ParticipantRepository extends CrudRepository<Participant, String> {
 	
 }

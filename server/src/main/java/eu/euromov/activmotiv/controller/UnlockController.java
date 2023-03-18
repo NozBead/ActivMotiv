@@ -1,5 +1,7 @@
 package eu.euromov.activmotiv.controller;
 
+import java.security.Principal;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import eu.euromov.activmotiv.authentication.ParticipantDetails;
 import eu.euromov.activmotiv.model.Unlock;
 import eu.euromov.activmotiv.repository.UnlockRepository;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(path="/unlock")
@@ -21,7 +25,10 @@ public class UnlockController {
 	UnlockRepository unlocks;
 	
 	@PostMapping
-	public void createUnlock(@RequestBody Unlock unlock) {
+	public void createUnlock(@Valid @RequestBody Unlock unlock, Principal principal) {
+		ParticipantDetails participant = (ParticipantDetails) principal;
+		log.info("Unlock from " + participant.getUsername());
+		unlock.setParticipant(participant.getParticipant());
 		unlocks.save(unlock);
 	}
 	

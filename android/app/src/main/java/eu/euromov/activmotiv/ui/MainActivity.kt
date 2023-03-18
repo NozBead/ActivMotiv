@@ -25,6 +25,7 @@ import eu.euromov.activmotiv.model.Unlock
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 class MainActivity : ComponentActivity() {
     private var exposureTime : Long = 0
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
     private fun stopExposureClock() {
         val currentTime = System.currentTimeMillis()
         exposureTime = currentTime - exposureTime
-        val unlock = Unlock(0, currentTime, exposureTime, false)
+        val unlock = Unlock(Instant.ofEpochMilli(currentTime), exposureTime, false)
         unlockDatabase?.unlockDao()?.insert(unlock)
     }
 

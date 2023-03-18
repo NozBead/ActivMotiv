@@ -2,28 +2,38 @@ package eu.euromov.activmotiv.model;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Participant {
-	@JsonIgnore
 	@Id
-	@GeneratedValue
-	private int id;
+	@NotBlank
+	private String username;
 	
+	@NotBlank
 	private String firstname;
-	private String lastname;
 	
-	public int getId() {
-		return id;
+	@NotBlank
+	private String lastname;
+
+	@NotBlank
+	private String email;
+	
+	@NotBlank
+	private String password;
+	
+	@NotNull
+	private Integer age;
+	
+	public String getUsername() {
+		return username;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getFirstname() {
@@ -42,9 +52,33 @@ public class Participant {
 		this.lastname = lastname;
 	}
 
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+	
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(username);
 	}
 
 	@Override
@@ -56,6 +90,6 @@ public class Participant {
 		if (getClass() != obj.getClass())
 			return false;
 		Participant other = (Participant) obj;
-		return id == other.id;
+		return Objects.equals(username, other.username);
 	}
 }

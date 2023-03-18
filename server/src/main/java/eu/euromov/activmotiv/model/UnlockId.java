@@ -1,17 +1,17 @@
 package eu.euromov.activmotiv.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 public class UnlockId {
-	private LocalDateTime time;
+	private Instant time;
 	private Participant participant;
 	
-	public LocalDateTime getTime() {
+	public Instant getTime() {
 		return time;
 	}
 
-	public void setTime(LocalDateTime time) {
+	public void setTime(Instant time) {
 		this.time = time;
 	}
 
