@@ -38,7 +38,7 @@ public class Unlock {
 		return exposureTime;
 	}
 
-	public void setExposureTime(long exposureTime) {
+	public void setExposureTime(Long exposureTime) {
 		this.exposureTime = exposureTime;
 	}
 

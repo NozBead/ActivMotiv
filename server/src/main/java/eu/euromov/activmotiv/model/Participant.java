@@ -5,7 +5,6 @@ import java.util.Objects;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Participant {
@@ -14,19 +13,7 @@ public class Participant {
 	private String username;
 	
 	@NotBlank
-	private String firstname;
-	
-	@NotBlank
-	private String lastname;
-
-	@NotBlank
-	private String email;
-	
-	@NotBlank
 	private String password;
-	
-	@NotNull
-	private Integer age;
 	
 	public String getUsername() {
 		return username;
@@ -34,38 +21,6 @@ public class Participant {
 
 	public void setUsername(String username) {
 		this.username = username;
-	}
-
-	public String getFirstname() {
-		return firstname;
-	}
-
-	public void setFirstname(String firstname) {
-		this.firstname = firstname;
-	}
-
-	public String getLastname() {
-		return lastname;
-	}
-
-	public void setLastname(String lastname) {
-		this.lastname = lastname;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public int getAge() {
-		return age;
-	}
-
-	public void setAge(int age) {
-		this.age = age;
 	}
 	
 	public String getPassword() {

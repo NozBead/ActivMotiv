@@ -1,8 +1,14 @@
 package eu.euromov.activmotiv.config;
 
+import java.util.Random;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.AbstractEntityManagerFactoryBean;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -13,6 +19,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -51,12 +60,38 @@ public class ActivMotivConfig {
 		provider.setPasswordEncoder(new BCryptPasswordEncoder());
 		return provider;
 	}
+	
+	@Bean
+	public SecretKey secretKey() {
+		byte[] secret = new byte[256];
+		Random rnd = new Random();
+		rnd.nextBytes(secret);
+		return new SecretKeySpec(secret, "HmacSHA256");
+	}
 
 	@Bean
+	public JwtDecoder jwtDecoder(SecretKey secret) {
+		return NimbusJwtDecoder.withSecretKey(secret)
+				.macAlgorithm(MacAlgorithm.HS256)
+				.build();
+	}
+
+	@Bean
+	@Order(1)
 	public SecurityFilterChain securityFilterChain(HttpSecurity http)
 			throws Exception {
+		http.securityMatcher("/unlock")  
+			.authorizeHttpRequests()
+			.requestMatchers("/unlock").authenticated()
+			.and().oauth2ResourceServer().jwt().and()
+			.and().csrf().disable();
+		return http.build();
+	}
+
+	@Bean
+	public SecurityFilterChain loginSecurityFilterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests()
-				.requestMatchers("/unlock").authenticated()
+				.requestMatchers("/participant/login").authenticated()
 				.anyRequest().permitAll()
 			.and().httpBasic()
 			.and().csrf().disable();
