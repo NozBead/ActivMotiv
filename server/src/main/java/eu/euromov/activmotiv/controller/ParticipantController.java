@@ -2,31 +2,18 @@ package eu.euromov.activmotiv.controller;
 
 import java.util.Optional;
 
-import javax.crypto.SecretKey;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwsHeader;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
-import com.nimbusds.jose.proc.SecurityContext;
-
-import eu.euromov.activmotiv.authentication.ParticipantDetails;
 import eu.euromov.activmotiv.model.Participant;
 import eu.euromov.activmotiv.repository.ParticipantRepository;
 import jakarta.validation.Valid;
@@ -39,9 +26,6 @@ public class ParticipantController {
 	
 	@Autowired
 	ParticipantRepository participants;
-	
-	@Autowired
-	SecretKey secretKey;
 	
 	@PostMapping(consumes = "application/json")
 	public ResponseEntity<?> create(@Valid @RequestBody Participant participant) {
@@ -61,12 +45,5 @@ public class ParticipantController {
 	}
 	
 	@GetMapping("/login")
-	public ResponseEntity<String> login(Authentication auth) {
-		ParticipantDetails participant = (ParticipantDetails) auth.getPrincipal();
-		ImmutableSecret<SecurityContext> secret = new ImmutableSecret<>(secretKey);
-		NimbusJwtEncoder encoder = new NimbusJwtEncoder(secret);
-		JwtClaimsSet claims = JwtClaimsSet.builder().claim("participant", participant.getUsername()).build();
-		JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
-		return ResponseEntity.ok(encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue());
-	}
+	public void login() {}
 }
