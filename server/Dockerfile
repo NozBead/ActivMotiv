@@ -10,12 +10,17 @@ RUN --mount=type=cache,target=/root/.m2/repository \
 COPY src src 
 
 RUN --mount=type=cache,target=/root/.m2/repository \
-  mvn package 
+  mvn package \
+  && mkdir activmotiv \
+  && cd activmotiv \
+  && mv /app/target/*.jar . \
+  && jar xf *.jar \
+  && rm -rf *.jar
 
 FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar .
+COPY --from=builder /app/activmotiv activmotiv
 
-CMD java -cp . -jar *.jar
+CMD java -cp activmotiv org.springframework.boot.loader.JarLauncher
