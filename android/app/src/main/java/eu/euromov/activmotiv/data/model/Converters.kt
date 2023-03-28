@@ -1,4 +1,4 @@
-package eu.euromov.activmotiv.model
+package eu.euromov.activmotiv.data.model
 
 import androidx.room.TypeConverter
 import java.time.Instant

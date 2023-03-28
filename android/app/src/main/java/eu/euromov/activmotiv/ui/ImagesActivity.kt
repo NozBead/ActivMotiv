@@ -2,7 +2,6 @@ package eu.euromov.activmotiv.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -16,27 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
+import androidx.work.*
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.service.PopUpService
-import eu.euromov.activmotiv.database.UnlockDatabase
-import eu.euromov.activmotiv.model.Unlock
+import eu.euromov.activmotiv.data.model.Unlock
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import eu.euromov.activmotiv.work.SaveWorker
 import java.time.Instant
 
-class MainActivity : ComponentActivity() {
+class ImagesActivity : ComponentActivity() {
     private var exposureTime : Long = 0
-    private var unlockDatabase : UnlockDatabase? = null
-
-    private fun createDatabase() : UnlockDatabase {
-        return Room.databaseBuilder(
-            applicationContext,
-            UnlockDatabase::class.java, "Unlock Database"
-        ).build()
-    }
 
     private fun startPopupService() {
         val serviceIntent = Intent()
@@ -48,17 +36,29 @@ class MainActivity : ComponentActivity() {
         exposureTime = System.currentTimeMillis()
     }
 
-    private fun stopExposureClock() {
+    private fun stopExposureClock() : Unlock {
         val currentTime = System.currentTimeMillis()
         exposureTime = currentTime - exposureTime
-        val unlock = Unlock(Instant.ofEpochMilli(currentTime), exposureTime, false)
-        unlockDatabase?.unlockDao()?.insert(unlock)
+        return Unlock(Instant.ofEpochMilli(currentTime), exposureTime, false)
+    }
+
+    private fun scheduleSaveWork(unlock : Unlock) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .build()
+        val saveWorkRequest: WorkRequest =
+            OneTimeWorkRequestBuilder<SaveWorker>()
+                .setConstraints(constraints)
+                .setInputData(workDataOf("Unlock" to unlock))
+                .build()
+        WorkManager
+            .getInstance(applicationContext)
+            .enqueue(saveWorkRequest)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         startPopupService()
-        unlockDatabase = createDatabase()
 
         setContent {
             ActivMotivTheme {
@@ -80,10 +80,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            stopExposureClock()
-        }
+        val unlock = stopExposureClock()
+        scheduleSaveWork(unlock)
     }
 }
 

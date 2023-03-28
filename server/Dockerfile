@@ -18,4 +18,4 @@ WORKDIR /app
 
 COPY --from=builder /app/target/*.jar .
 
-CMD java -jar *.jar
+CMD java -cp . -jar *.jar

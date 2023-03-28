@@ -3,4 +3,5 @@
     <string name="wallpaper_desc">Wallpaper</string>
     <string name="notification_title">ActivMotiv</string>
     <string name="notification_message">ActivMotiv est en tâche de fond</string>
+    <string name="server">lille.funetdelire.fr</string>
 </resources>
