@@ -32,6 +32,9 @@ interface UploadClient {
     @GET("participant/login")
     fun login(@Header("Authorization") authorization : String): Call<Unit>
 
+    @GET("participant/login")
+    fun check(@Header("Cookie") auth : String): Call<Unit>
+
     @POST("participant")
     fun register(@Body user : User): Call<Unit>
 

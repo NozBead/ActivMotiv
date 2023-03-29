@@ -5,10 +5,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class ClientCallback(val action : () -> Unit): Callback<Unit> {
+class ClientCallback(val action : (Response<Unit>) -> Unit): Callback<Unit> {
 
     override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-        action()
+        Log.i("Client", response.code().toString())
+        action(response)
     }
 
     override fun onFailure(call: Call<Unit>, t: Throwable) {

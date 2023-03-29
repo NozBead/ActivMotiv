@@ -38,19 +38,19 @@ class UploadWorker (appContext: Context, workerParams: WorkerParameters)
         return Result.success()
     }
 
-    private fun upload(sessionId: String) {
+    private fun upload(sessionCookie: String) {
         val unlocks = UnlockDatabase.getDatabase(applicationContext).unlockDao()
         val client = UploadClient.getClient(applicationContext.getString(R.string.server))
         val notSent = unlocks.getAllNotSent()
 
-
-
         for (unlock in notSent) {
             val callback = ClientCallback {
-                unlock.sent = true
-                unlocks.update(unlock)
+                if (it.code() == 200) {
+                    unlock.sent = true
+                    unlocks.update(unlock)
+                }
             }
-            client.unlock("JSESSIONID=$sessionId", unlock).enqueue(callback)
+            client.unlock(sessionCookie, unlock).enqueue(callback)
         }
     }
 }
