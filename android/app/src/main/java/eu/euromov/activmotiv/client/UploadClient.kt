@@ -1,9 +1,10 @@
-package eu.euromov.activmotiv.data.client
+package eu.euromov.activmotiv.client
 
-import eu.euromov.activmotiv.data.model.Unlock
-import eu.euromov.activmotiv.data.model.User
+import eu.euromov.activmotiv.model.Unlock
+import eu.euromov.activmotiv.model.User
 import retrofit2.Call
 import retrofit2.Retrofit
+import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -18,8 +19,9 @@ interface UploadClient {
         fun getClient(baseUrl : String): UploadClient {
             return INSTANCE ?: synchronized(this) {
                 val retrofit = Retrofit.Builder()
+                    .addConverterFactory(JacksonConverterFactory.create())
                     .baseUrl(baseUrl)
-                    .build();
+                    .build()
                 val instance = retrofit.create(UploadClient::class.java)
                 INSTANCE = instance
                 instance

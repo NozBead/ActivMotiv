@@ -1,13 +1,12 @@
-package eu.euromov.activmotiv.data.database
+package eu.euromov.activmotiv.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import eu.euromov.activmotiv.data.dao.UnlockDao
-import eu.euromov.activmotiv.data.model.Converters
-import eu.euromov.activmotiv.data.model.Unlock
+import eu.euromov.activmotiv.model.Converters
+import eu.euromov.activmotiv.model.Unlock
 
 @Database(entities = [Unlock::class], version = 1)
 @TypeConverters(Converters::class)
@@ -22,7 +21,7 @@ abstract class UnlockDatabase : RoomDatabase() {
                     context.applicationContext,
                     UnlockDatabase::class.java,
                     "unlock_database"
-                ).build()
+                ).allowMainThreadQueries().build()
                 INSTANCE = instance
                 instance
             }

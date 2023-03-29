@@ -1,4 +1,4 @@
-package eu.euromov.activmotiv.data.model
+package eu.euromov.activmotiv.model
 
 data class User (
     val username : String,

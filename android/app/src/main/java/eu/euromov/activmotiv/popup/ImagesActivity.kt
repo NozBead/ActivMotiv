@@ -1,6 +1,5 @@
-package eu.euromov.activmotiv.ui
+package eu.euromov.activmotiv.popup
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,39 +16,30 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.work.*
 import eu.euromov.activmotiv.R
-import eu.euromov.activmotiv.service.PopUpService
-import eu.euromov.activmotiv.data.model.Unlock
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
-import eu.euromov.activmotiv.work.SaveWorker
-import java.time.Instant
+import eu.euromov.activmotiv.database.SaveWorker
 
 class ImagesActivity : ComponentActivity() {
     private var exposureTime : Long = 0
-
-    private fun startPopupService() {
-        val serviceIntent = Intent()
-        serviceIntent.setClass(baseContext, PopUpService::class.java)
-        baseContext.startForegroundService(serviceIntent)
-    }
 
     private fun startExposureClock() {
         exposureTime = System.currentTimeMillis()
     }
 
-    private fun stopExposureClock() : Unlock {
+    private fun stopExposureClock() : Long {
         val currentTime = System.currentTimeMillis()
         exposureTime = currentTime - exposureTime
-        return Unlock(Instant.ofEpochMilli(currentTime), exposureTime, false)
+        return currentTime
     }
 
-    private fun scheduleSaveWork(unlock : Unlock) {
+    private fun scheduleSaveWork(currentTime : Long, exposureTime : Long) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.UNMETERED)
             .build()
         val saveWorkRequest: WorkRequest =
             OneTimeWorkRequestBuilder<SaveWorker>()
                 .setConstraints(constraints)
-                .setInputData(workDataOf("Unlock" to unlock))
+                .setInputData(workDataOf("time" to currentTime, "exposureTime" to exposureTime))
                 .build()
         WorkManager
             .getInstance(applicationContext)
@@ -58,7 +48,6 @@ class ImagesActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        startPopupService()
 
         setContent {
             ActivMotivTheme {
@@ -80,8 +69,8 @@ class ImagesActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        val unlock = stopExposureClock()
-        scheduleSaveWork(unlock)
+        val time = stopExposureClock()
+        scheduleSaveWork(time, exposureTime)
     }
 }
 

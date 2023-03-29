@@ -1,4 +1,4 @@
-package eu.euromov.activmotiv.service
+package eu.euromov.activmotiv
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,10 +9,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
-import eu.euromov.activmotiv.R
-import eu.euromov.activmotiv.receiver.ScreenOnReceiver
+import androidx.work.*
+import eu.euromov.activmotiv.client.UploadWorker
+import eu.euromov.activmotiv.popup.ScreenOnReceiver
+import java.util.concurrent.TimeUnit
 
-class PopUpService : Service() {
+class MainService : Service() {
     private val receiver = ScreenOnReceiver()
 
     override fun onCreate() {
@@ -20,9 +22,21 @@ class PopUpService : Service() {
         applicationContext.registerReceiver(receiver, filter)
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    private fun scheduleWorker() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .build()
+        val uploadWorkRequest: WorkRequest = PeriodicWorkRequestBuilder<UploadWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
+        WorkManager
+            .getInstance(applicationContext)
+            .enqueue(uploadWorkRequest)
+    }
+
+    private fun startNotification() {
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE_DEFAULT).apply {
-            description = "ActiveMotiv Notification Channel"
+            description = "ActivMotiv Notification Channel"
         }
 
         val notificationManager: NotificationManager =
@@ -35,6 +49,11 @@ class PopUpService : Service() {
             .build()
 
         startForeground(2, notification)
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        scheduleWorker()
+        startNotification()
         return START_STICKY
     }
 
@@ -47,7 +66,7 @@ class PopUpService : Service() {
     }
 
     companion object {
-        const val CHANNEL_ID = "ActiveMotivNotif"
-        const val CHANNEL_NAME = "ActiveMotiv"
+        const val CHANNEL_ID = "ActivMotivNotif"
+        const val CHANNEL_NAME = "ActivMotiv"
     }
 }

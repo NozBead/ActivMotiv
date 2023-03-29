@@ -1,9 +1,8 @@
-package eu.euromov.activmotiv.receiver
+package eu.euromov.activmotiv.popup
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import eu.euromov.activmotiv.ui.ImagesActivity
 
 class ScreenOnReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
