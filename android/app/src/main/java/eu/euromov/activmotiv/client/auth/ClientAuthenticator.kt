@@ -10,16 +10,17 @@ import android.os.Bundle
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.client.ClientCallback
 import eu.euromov.activmotiv.client.UploadClient
-import java.security.MessageDigest
 import java.util.*
-
 
 class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(context) {
     private val am: AccountManager = AccountManager.get(context)
 
-    override fun addAccount(response: AccountAuthenticatorResponse, accountType: String, authTokenType: String, requiredFeatures: Array<String>?, options: Bundle?) : Bundle {
+    override fun addAccount(response: AccountAuthenticatorResponse, accountType: String, authTokenType: String?, requiredFeatures: Array<String>?, options: Bundle) : Bundle {
         val bundle = Bundle()
-        val intent = Intent(context, RegisterAccountActivity::class.java)
+        val intent = Intent(context, AccountAuthActivity::class.java)
+        val option = context.getString(R.string.register_option)
+        intent.putExtra(option, options.getBoolean(option))
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
         bundle.putParcelable(AccountManager.KEY_INTENT, intent)
         return bundle
     }
@@ -36,33 +37,36 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
         throw UnsupportedOperationException()
     }
 
+    private fun getTokenResponse(token: String?, account: Account) : Bundle {
+        val bundle = Bundle()
+        bundle.putString(AccountManager.KEY_AUTHTOKEN, token)
+        bundle.putString(AccountManager.KEY_ACCOUNT_NAME, account.name)
+        bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type)
+        am.setUserData(account, AccountManager.KEY_AUTHTOKEN, token)
+        return bundle
+    }
+
+    private fun getBasic(account: Account) : String {
+        val base = Base64.getUrlEncoder()
+        val credentials = account.name + ":" + am.getPassword(account)
+        return base.encodeToString(credentials.toByteArray())
+    }
+
     override fun getAuthToken(response: AccountAuthenticatorResponse, account: Account, authTokenType: String, options: Bundle) : Bundle? {
         val client = UploadClient.getClient(context.getString(R.string.server))
-        val sessionCookie : String? = am.getUserData(account, AccountManager.KEY_AUTHTOKEN)
 
-        val base = Base64.getUrlEncoder()
-        val md = MessageDigest.getInstance("SHA-256")
-        val password = am.getPassword(account).toByteArray()
-        val passwordDigest = base.encodeToString(md.digest(password))
+        val basic = getBasic(account)
 
-        val credentials = account.name + ":" + passwordDigest
-        val basic = base.encodeToString(credentials.toByteArray())
-        val callback = ClientCallback {
-            val bundle = Bundle()
-            if (it.code() == 200) {
-                bundle.putString(AccountManager.KEY_AUTHTOKEN, it.headers().get("Cookie"))
-                am.setUserData(account, AccountManager.KEY_AUTHTOKEN, it.headers().get("Cookie"))
-            }
-            response.onResult(bundle)
-        }
-
-        if (sessionCookie == null) {
-            client.login("Basic $basic").enqueue(callback)
-        }
-        else {
-            client.check(sessionCookie).enqueue(callback)
-        }
-
+        client.login("Basic $basic").enqueue(
+            ClientCallback {
+                if (it.code() == 200) {
+                    val bundle = getTokenResponse(it.headers().get("Set-Cookie"), account)
+                    response.onResult(bundle)
+                }
+                else {
+                    response.onError(it.code(), "Cannot get token")
+                }
+            })
         return null
     }
 

@@ -52,7 +52,7 @@ class MainService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        //scheduleWorker()
+        scheduleWorker()
         startNotification()
         return START_STICKY
     }

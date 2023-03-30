@@ -8,7 +8,6 @@ import retrofit2.Response
 class ClientCallback(val action : (Response<Unit>) -> Unit): Callback<Unit> {
 
     override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-        Log.i("Client", response.code().toString())
         action(response)
     }
 

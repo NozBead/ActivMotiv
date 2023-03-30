@@ -3,6 +3,7 @@
     <string name="wallpaper_desc">Wallpaper</string>
     <string name="notification_title">ActivMotiv</string>
     <string name="notification_message">ActivMotiv est en tâche de fond</string>
-    <string name="server">http://lille.funetdelire.fr:8080</string>
+    <string name="server">http://activmotiv.funetdelire.fr:8080</string>
     <string name="accountType">eu.euromov.activmotiv</string>
+    <string name="register_option">REGISTER</string>
 </resources>
