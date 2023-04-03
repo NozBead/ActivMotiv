@@ -10,10 +10,13 @@ import android.os.Bundle
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.client.ClientCallback
 import eu.euromov.activmotiv.client.UploadClient
+import eu.euromov.activmotiv.model.User
+import retrofit2.Response
 import java.util.*
 
 class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(context) {
     private val am: AccountManager = AccountManager.get(context)
+    private val client = UploadClient.getClient(context.getString(R.string.server))
 
     override fun addAccount(response: AccountAuthenticatorResponse, accountType: String, authTokenType: String?, requiredFeatures: Array<String>?, options: Bundle) : Bundle {
         val bundle = Bundle()
@@ -23,6 +26,17 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
         bundle.putParcelable(AccountManager.KEY_INTENT, intent)
         return bundle
+    }
+
+    fun pushAccount(response: AccountAuthenticatorResponse?, username: String, password: String) {
+        val accountType = context.getString(R.string.accountType)
+        Account(username, accountType).also { account ->
+            am.addAccountExplicitly(account, password, null)
+        }
+        val bundle = Bundle()
+        bundle.putString(AccountManager.KEY_ACCOUNT_NAME, username)
+        bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType)
+        response?.onResult(bundle)
     }
 
     override fun confirmCredentials(response: AccountAuthenticatorResponse, account: Account, options: Bundle) : Bundle {
@@ -37,7 +51,7 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
         throw UnsupportedOperationException()
     }
 
-    private fun getTokenResponse(token: String?, account: Account) : Bundle {
+    private fun createTokenResponse(token: String?, account: Account) : Bundle {
         val bundle = Bundle()
         bundle.putString(AccountManager.KEY_AUTHTOKEN, token)
         bundle.putString(AccountManager.KEY_ACCOUNT_NAME, account.name)
@@ -47,20 +61,22 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
     }
 
     private fun getBasic(account: Account) : String {
+        return getBasic(account.name, am.getPassword(account))
+    }
+
+    private fun getBasic(username: String, password: String) : String {
         val base = Base64.getUrlEncoder()
-        val credentials = account.name + ":" + am.getPassword(account)
-        return base.encodeToString(credentials.toByteArray())
+        val credentials = "$username:$password"
+        return "Basic " + base.encodeToString(credentials.toByteArray())
     }
 
     override fun getAuthToken(response: AccountAuthenticatorResponse, account: Account, authTokenType: String, options: Bundle) : Bundle? {
-        val client = UploadClient.getClient(context.getString(R.string.server))
-
         val basic = getBasic(account)
 
-        client.login("Basic $basic").enqueue(
+        client.login(basic).enqueue(
             ClientCallback {
                 if (it.code() == 200) {
-                    val bundle = getTokenResponse(it.headers().get("Set-Cookie"), account)
+                    val bundle = createTokenResponse(it.headers().get("Set-Cookie"), account)
                     response.onResult(bundle)
                 }
                 else {
@@ -68,6 +84,15 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
                 }
             })
         return null
+    }
+
+    fun checkLogin(username: String, password: String): Response<Unit> {
+        val auth = getBasic(username, password)
+        return client.login(auth).execute()
+    }
+
+    fun register(username: String, password: String) : Response<Unit> {
+        return client.register(User(username, password)).execute()
     }
 
     override fun getAuthTokenLabel(authTokenType: String) : String {

@@ -2,6 +2,7 @@ package eu.euromov.activmotiv
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.content.Intent
 import android.os.Bundle
@@ -16,35 +17,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private fun addAccount(connected : MutableState<Boolean>, register : Boolean) {
+    private fun addAccount(register : Boolean) : AccountManagerFuture<Bundle> {
         val am = AccountManager.get(applicationContext)
         val options = Bundle()
         options.putBoolean(applicationContext.getString(R.string.register_option), register)
-        am.addAccount(
+        return am.addAccount(
             resources.getString(R.string.accountType),
             null,
             null,
             options,
             this,
-            {
-               try {
-                   it.result
-                   connected.value = false
-               } catch (e : AuthenticatorException) {
-                   Toast.makeText(applicationContext, "Erreur lors de l'ajout du compte", Toast.LENGTH_SHORT).show()
-               }
-            } ,
+            null,
             null)
     }
 
@@ -61,11 +57,20 @@ class MainActivity : ComponentActivity() {
                 val connected = rememberSaveable { mutableStateOf(accounts.isEmpty()) }
 
                 if (connected.value) {
-                    FirstTime(connected, ::addAccount)
+                    FirstTime {
+                        lifecycleScope.launch {
+                            try {
+                                val result = addAccount(it).result
+                                connected.value = false
+                            } catch (e : AuthenticatorException) {
+                                Toast.makeText(applicationContext, "Erreur lors de l'ajout du compte", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                 }
                 else {
                     val account = am.accounts[0]
-                    Hello(account.name)
+                    Hello(account)
                 }
             }
         }
@@ -73,14 +78,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Hello(name : String) {
+fun Hello(account : Account) {
     Box(
         modifier = Modifier
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -89,12 +94,12 @@ fun Hello(name : String) {
             )
             Text(
                 fontSize = 30.sp,
-                text = "Bonjour $name")
+                text = "Bonjour "  + account.name)
         }
     }
 }
 @Composable
-fun FirstTime(connected: MutableState<Boolean>, add: (MutableState<Boolean>, Boolean) -> Unit) {
+fun FirstTime(onSelect: (Boolean) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -109,12 +114,12 @@ fun FirstTime(connected: MutableState<Boolean>, add: (MutableState<Boolean>, Boo
                 "Logo"
             )
             Button(
-                onClick = {add(connected, true)}
+                onClick = {onSelect(true)}
             ) {
                 Text("Créer un compte")
             }
             Button(
-                onClick = {add(connected, false)}
+                onClick = {onSelect(false)}
             ) {
                 Text("Se connecter")
             }
