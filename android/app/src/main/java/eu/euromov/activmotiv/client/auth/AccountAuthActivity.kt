@@ -68,7 +68,7 @@ class AccountAuthActivity : ComponentActivity() {
                                 "Identifiants incorrectes",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            response?.onError(result.code(), "Cannot add account")
+                            response?.onError(result.code(), "Cannot add account, incorrect ids")
                         }
                     }
                 }

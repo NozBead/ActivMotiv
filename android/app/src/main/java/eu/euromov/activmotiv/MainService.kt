@@ -24,7 +24,7 @@ class MainService : Service() {
 
     private fun scheduleWorker() {
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
         val uploadWorkRequest: WorkRequest = PeriodicWorkRequestBuilder<UploadWorker>(15, TimeUnit.MINUTES)
             .setConstraints(constraints)

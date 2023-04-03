@@ -6,7 +6,7 @@ import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -55,16 +58,20 @@ class MainActivity : ComponentActivity() {
                 val am = AccountManager.get(applicationContext)
                 val accounts: Array<Account> = am.getAccountsByType(applicationContext.getString(R.string.accountType))
 
-                val connected = rememberSaveable { mutableStateOf(!accounts.isEmpty()) }
+                var connected by rememberSaveable { mutableStateOf(accounts.isNotEmpty()) }
 
-                if (!connected.value) {
+                if (!connected) {
                     FirstTime {
-                        lifecycleScope.launch(Dispatchers.IO) {
+                        val addJob = lifecycleScope.async(Dispatchers.IO) {
                             try {
-                                val result = addAccount(it).result
-                                connected.value = true
+                                addAccount(it).result
                             } catch (e : AuthenticatorException) {
+                                Log.e("Add account", e.stackTraceToString())
                             }
+                        }
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            val result = addJob.await()
+                            connected = true
                         }
                     }
                 }
