@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -54,16 +55,15 @@ class MainActivity : ComponentActivity() {
                 val am = AccountManager.get(applicationContext)
                 val accounts: Array<Account> = am.getAccountsByType(applicationContext.getString(R.string.accountType))
 
-                val connected = rememberSaveable { mutableStateOf(accounts.isEmpty()) }
+                val connected = rememberSaveable { mutableStateOf(!accounts.isEmpty()) }
 
-                if (connected.value) {
+                if (!connected.value) {
                     FirstTime {
-                        lifecycleScope.launch {
+                        lifecycleScope.launch(Dispatchers.IO) {
                             try {
                                 val result = addAccount(it).result
-                                connected.value = false
+                                connected.value = true
                             } catch (e : AuthenticatorException) {
-                                Toast.makeText(applicationContext, "Erreur lors de l'ajout du compte", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }

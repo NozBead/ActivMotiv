@@ -27,7 +27,6 @@ public class UnlockController {
 	@PostMapping
 	public void createUnlock(@Valid @RequestBody Unlock unlock, UsernamePasswordAuthenticationToken token) {
 		ParticipantDetails participant = (ParticipantDetails) token.getPrincipal();
-		log.info("Unlock from " + participant.getUsername());
 		
 		UnlockId id = new UnlockId();
 		id.setParticipant(participant.getParticipant());
@@ -35,6 +34,10 @@ public class UnlockController {
 		if (!unlocks.existsById(id)) {
 			unlock.setParticipant(participant.getParticipant());
 			unlocks.save(unlock);
+			log.info("Unlock from " + participant.getUsername() + " added");
+		}
+		else {
+			log.info("Unlock from " + participant.getUsername() + " already existing");
 		}
 	}
 	

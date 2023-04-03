@@ -7,15 +7,9 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -24,6 +18,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -39,13 +35,34 @@ class AccountAuthActivity : ComponentActivity() {
         setContent {
             ActivMotivTheme {
                 val action = if (register) authenticator::register else authenticator::checkLogin
-                Form(register) { username, password ->
-                    lifecycleScope.launch {
-                        val result = action(username, password)
-                        if (result.code() == 200) {
-                            authenticator?.pushAccount(response, username, password)
+                var loading by rememberSaveable { mutableStateOf(false) }
+                Form(loading, register) { username, password ->
+                    val request = lifecycleScope.async(Dispatchers.IO) {
+                        try {
+                            return@async action(username, password)
+                        }
+                        catch (e: Exception) {
+                            return@async null
+                        }
+                    }
+
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        loading = true
+                        val result = request.await()
+                        loading = false
+                        if (result == null) {
+                            Toast.makeText(
+                                applicationContext,
+                                "Impossible de joindre le serveur",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            response?.onError(1, "Cannot add account")
+                        }
+                        else if(result.code() == 200) {
+                            authenticator.pushAccount(response, username, password)
                             finish()
-                        } else {
+                        }
+                        else {
                             Toast.makeText(
                                 applicationContext,
                                 "Identifiants incorrectes",
@@ -62,7 +79,7 @@ class AccountAuthActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Form(register : Boolean, onSubmit : (String, String) -> Unit) {
+fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.fillMaxSize()
@@ -88,12 +105,17 @@ fun Form(register : Boolean, onSubmit : (String, String) -> Unit) {
                 onValueChange = { password = it },
                 visualTransformation = PasswordVisualTransformation()
             )
-            Button(
-                onClick = {
-                    onSubmit(username, password)
+            if (!loading) {
+                Button(
+                    onClick = {
+                        onSubmit(username, password)
+                    }
+                ) {
+                    Text(if (register) "Créer" else "Se connecter")
                 }
-            ) {
-                Text(if (register) "Créer" else "Se connecter")
+            }
+            else {
+                CircularProgressIndicator()
             }
         }
     }
