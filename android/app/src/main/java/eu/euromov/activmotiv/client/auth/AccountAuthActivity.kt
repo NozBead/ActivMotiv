@@ -38,38 +38,30 @@ class AccountAuthActivity : ComponentActivity() {
                 var loading by rememberSaveable { mutableStateOf(false) }
                 Form(loading, register) { username, password ->
                     val request = lifecycleScope.async(Dispatchers.IO) {
-                        try {
-                            return@async action(username, password)
-                        }
-                        catch (e: Exception) {
-                            return@async null
-                        }
+                       action(username, password)
                     }
 
                     lifecycleScope.launch(Dispatchers.Main) {
                         loading = true
-                        val result = request.await()
+                        try {
+                            val code = request.await().code()
+                            if(code == 200) {
+                                val bundle = authenticator.pushAccount(username, password)
+                                response?.onResult(bundle)
+                                finish()
+                            }
+                            else {
+                                throw AuthenticationException("Identifiants incorrects")
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                applicationContext,
+                                e.message,
+                                Toast.LENGTH_LONG
+                            ).show()
+                            response?.onError(0, e.message)
+                        }
                         loading = false
-                        if (result == null) {
-                            Toast.makeText(
-                                applicationContext,
-                                "Impossible de joindre le serveur",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            response?.onError(1, "Cannot add account")
-                        }
-                        else if(result.code() == 200) {
-                            authenticator.pushAccount(response, username, password)
-                            finish()
-                        }
-                        else {
-                            Toast.makeText(
-                                applicationContext,
-                                "Identifiants incorrectes",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            response?.onError(result.code(), "Cannot add account, incorrect ids")
-                        }
                     }
                 }
             }

@@ -7,51 +7,36 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.database.UnlockDatabase
+import eu.euromov.activmotiv.model.Unlock
 
-class UploadWorker (appContext: Context, workerParams: WorkerParameters)
+class UploadWorker (private val appContext: Context, workerParams: WorkerParameters)
     : CoroutineWorker(appContext, workerParams) {
-    private val unlocks = UnlockDatabase.getDatabase(applicationContext).unlockDao()
-    private val client = UploadClient.getClient(applicationContext.getString(R.string.server))
-    private val am: AccountManager = AccountManager.get(applicationContext)
+    private val unlocks = UnlockDatabase.getDatabase(appContext).unlockDao()
+    private val client = UploadClient.getClient(appContext.getString(R.string.server))
+    private val am: AccountManager = AccountManager.get(appContext)
+
+    private fun checkToken(token : String): Boolean {
+        return client.check(token).execute().code() == 200
+    }
+
     private fun getToken(account : Account): String {
-        return am.getAuthToken(
+        var token = am.getAuthToken(
             account,
             "",
             null,
             true,
             null,
             null
-        ).result.getString(AccountManager.KEY_AUTHTOKEN, "")
-    }
-    override suspend fun doWork(): Result {
-        val accounts: Array<Account> = am.getAccountsByType(applicationContext.getString(R.string.accountType))
+        ).result.getString(AccountManager.KEY_AUTHTOKEN, null)
 
-        if(accounts.isEmpty()) {
-            return Result.failure()
-        }
-
-        val account = accounts[0]
-
-        var token: String = getToken(account)
-        if (!checkToken(token)) {
+        if (token == null || !checkToken(token)) {
             am.invalidateAuthToken(applicationContext.getString(R.string.accountType), token)
             token = getToken(account)
-            upload(token)
         }
-        else {
-            upload(token)
-        }
-
-        return Result.success()
+        return token
     }
 
-    private fun checkToken(token : String): Boolean {
-        return client.check(token).execute().code() == 200
-    }
-
-    private fun upload(sessionCookie: String) {
-        val notSent = unlocks.getAllNotSent()
-
+    private fun upload(notSent:List<Unlock>, sessionCookie: String) {
         for (unlock in notSent) {
             val response = client.unlock(sessionCookie, unlock).execute()
             if (response.code() == 200) {
@@ -59,5 +44,23 @@ class UploadWorker (appContext: Context, workerParams: WorkerParameters)
                 unlocks.update(unlock)
             }
         }
+    }
+
+    override suspend fun doWork(): Result {
+        val accounts: Array<Account> = am.getAccountsByType(appContext.getString(R.string.accountType))
+        if(accounts.isEmpty()) {
+            return Result.failure()
+        }
+        val account = accounts[0]
+
+        val notSent = unlocks.getAllNotSent()
+        if(notSent.isEmpty()) {
+            return Result.success()
+        }
+
+        val token = getToken(account)
+        upload(notSent, token)
+
+        return Result.success()
     }
 }

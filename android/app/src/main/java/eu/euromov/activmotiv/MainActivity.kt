@@ -63,15 +63,15 @@ class MainActivity : ComponentActivity() {
                 if (!connected) {
                     FirstTime {
                         val addJob = lifecycleScope.async(Dispatchers.IO) {
-                            try {
-                                addAccount(it).result
-                            } catch (e : AuthenticatorException) {
-                                Log.e("Add account", e.stackTraceToString())
-                            }
+                            addAccount(it).result
                         }
                         lifecycleScope.launch(Dispatchers.Main) {
-                            val result = addJob.await()
-                            connected = true
+                            try {
+                                addJob.await()
+                                connected = true
+                            } catch (e: AuthenticatorException) {
+                                Log.e("Add account", e.stackTraceToString())
+                            }
                         }
                     }
                 }

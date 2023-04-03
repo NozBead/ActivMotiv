@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import eu.euromov.activmotiv.R
-import eu.euromov.activmotiv.client.ClientCallback
 import eu.euromov.activmotiv.client.UploadClient
 import eu.euromov.activmotiv.model.User
 import retrofit2.Response
@@ -28,7 +27,7 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
         return bundle
     }
 
-    fun pushAccount(response: AccountAuthenticatorResponse?, username: String, password: String) {
+    fun pushAccount(username: String, password: String) : Bundle {
         val accountType = context.getString(R.string.accountType)
         Account(username, accountType).also { account ->
             am.addAccountExplicitly(account, password, null)
@@ -36,7 +35,7 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
         val bundle = Bundle()
         bundle.putString(AccountManager.KEY_ACCOUNT_NAME, username)
         bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType)
-        response?.onResult(bundle)
+        return bundle
     }
 
     override fun confirmCredentials(response: AccountAuthenticatorResponse, account: Account, options: Bundle) : Bundle {
@@ -70,20 +69,16 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
         return "Basic " + base.encodeToString(credentials.toByteArray())
     }
 
-    override fun getAuthToken(response: AccountAuthenticatorResponse, account: Account, authTokenType: String, options: Bundle) : Bundle? {
+    override fun getAuthToken(response: AccountAuthenticatorResponse, account: Account, authTokenType: String, options: Bundle) : Bundle {
         val basic = getBasic(account)
 
-        client.login(basic).enqueue(
-            ClientCallback {
-                if (it.code() == 200) {
-                    val bundle = createTokenResponse(it.headers().get("Set-Cookie"), account)
-                    response.onResult(bundle)
-                }
-                else {
-                    response.onError(it.code(), "Cannot get token")
-                }
-            })
-        return null
+        val result = client.login(basic).execute()
+
+        return if (result.code() == 200) {
+            createTokenResponse(result.headers().get("Set-Cookie"), account)
+        } else {
+            Bundle()
+        }
     }
 
     fun checkLogin(username: String, password: String): Response<Unit> {

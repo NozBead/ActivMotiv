@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.work.*
 import eu.euromov.activmotiv.R
+import eu.euromov.activmotiv.client.UploadWorker
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import eu.euromov.activmotiv.database.SaveWorker
 
@@ -34,16 +35,21 @@ class ImagesActivity : ComponentActivity() {
 
     private fun scheduleSaveWork(currentTime : Long, exposureTime : Long) {
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val saveWorkRequest: WorkRequest =
+        val saveWorkRequest =
             OneTimeWorkRequestBuilder<SaveWorker>()
-                .setConstraints(constraints)
                 .setInputData(workDataOf("time" to currentTime, "exposureTime" to exposureTime))
+                .build()
+        val uploadWorkRequest =
+            OneTimeWorkRequestBuilder<UploadWorker>()
+                .setConstraints(constraints)
                 .build()
         WorkManager
             .getInstance(applicationContext)
-            .enqueue(saveWorkRequest)
+            .beginWith(saveWorkRequest)
+            .then(uploadWorkRequest)
+            .enqueue()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

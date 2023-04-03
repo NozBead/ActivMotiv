@@ -26,12 +26,12 @@ class MainService : Service() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val uploadWorkRequest: WorkRequest = PeriodicWorkRequestBuilder<UploadWorker>(15, TimeUnit.MINUTES)
+        val uploadWorkRequest = PeriodicWorkRequestBuilder<UploadWorker>(15, TimeUnit.MINUTES)
             .setConstraints(constraints)
             .build()
         WorkManager
             .getInstance(applicationContext)
-            .enqueue(uploadWorkRequest)
+            .enqueueUniquePeriodicWork("Upload to server", ExistingPeriodicWorkPolicy.KEEP, uploadWorkRequest)
     }
 
     private fun startNotification() {
