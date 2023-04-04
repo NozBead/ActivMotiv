@@ -65,8 +65,7 @@ class MainActivity : ComponentActivity() {
             ActivMotivTheme {
                 Surface {
                     val am = AccountManager.get(applicationContext)
-                    val accounts: Array<Account> =
-                        am.getAccountsByType(applicationContext.getString(R.string.accountType))
+                    val accounts = am.getAccountsByType(applicationContext.getString(R.string.accountType))
 
                     var connected by rememberSaveable { mutableStateOf(accounts.isNotEmpty()) }
 
