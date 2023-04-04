@@ -16,8 +16,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
+import eu.euromov.activmotiv.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -34,34 +34,36 @@ class AccountAuthActivity : ComponentActivity() {
         response?.onRequestContinued()
         setContent {
             ActivMotivTheme {
-                val action = if (register) authenticator::register else authenticator::checkLogin
-                var loading by rememberSaveable { mutableStateOf(false) }
-                Form(loading, register) { username, password ->
-                    val request = lifecycleScope.async(Dispatchers.IO) {
-                       action(username, password)
-                    }
-
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        loading = true
-                        try {
-                            val code = request.await().code()
-                            if(code == 200) {
-                                val bundle = authenticator.pushAccount(username, password)
-                                response?.onResult(bundle)
-                                finish()
-                            }
-                            else {
-                                throw AuthenticationException("Identifiants incorrects")
-                            }
-                        } catch (e: Exception) {
-                            Toast.makeText(
-                                applicationContext,
-                                e.message,
-                                Toast.LENGTH_LONG
-                            ).show()
-                            response?.onError(0, e.message)
+                Surface {
+                    val action =
+                        if (register) authenticator::register else authenticator::checkLogin
+                    var loading by rememberSaveable { mutableStateOf(false) }
+                    Form(loading, register) { username, password ->
+                        val request = lifecycleScope.async(Dispatchers.IO) {
+                            action(username, password)
                         }
-                        loading = false
+
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            loading = true
+                            try {
+                                val code = request.await().code()
+                                if (code == 200) {
+                                    val bundle = authenticator.pushAccount(username, password)
+                                    response?.onResult(bundle)
+                                    finish()
+                                } else {
+                                    throw AuthenticationException("Identifiants incorrects")
+                                }
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    applicationContext,
+                                    e.message,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                response?.onError(0, e.message)
+                            }
+                            loading = false
+                        }
                     }
                 }
             }

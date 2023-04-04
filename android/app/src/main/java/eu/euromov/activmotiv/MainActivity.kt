@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
@@ -55,29 +58,31 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ActivMotivTheme {
-                val am = AccountManager.get(applicationContext)
-                val accounts: Array<Account> = am.getAccountsByType(applicationContext.getString(R.string.accountType))
+                Surface {
+                    val am = AccountManager.get(applicationContext)
+                    val accounts: Array<Account> =
+                        am.getAccountsByType(applicationContext.getString(R.string.accountType))
 
-                var connected by rememberSaveable { mutableStateOf(accounts.isNotEmpty()) }
+                    var connected by rememberSaveable { mutableStateOf(accounts.isNotEmpty()) }
 
-                if (!connected) {
-                    FirstTime {
-                        val addJob = lifecycleScope.async(Dispatchers.IO) {
-                            addAccount(it).result
-                        }
-                        lifecycleScope.launch(Dispatchers.Main) {
-                            try {
-                                addJob.await()
-                                connected = true
-                            } catch (e: AuthenticatorException) {
-                                Log.e("Add account", e.stackTraceToString())
+                    if (!connected) {
+                        FirstTime {
+                            val addJob = lifecycleScope.async(Dispatchers.IO) {
+                                addAccount(it).result
+                            }
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                try {
+                                    addJob.await()
+                                    connected = true
+                                } catch (e: AuthenticatorException) {
+                                    Log.e("Add account", e.stackTraceToString())
+                                }
                             }
                         }
+                    } else {
+                        val account = am.accounts[0]
+                        Hello(account)
                     }
-                }
-                else {
-                    val account = am.accounts[0]
-                    Hello(account)
                 }
             }
         }
@@ -92,7 +97,7 @@ fun Hello(account : Account) {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -113,12 +118,17 @@ fun FirstTime(onSelect: (Boolean) -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Column(
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(id = R.drawable.full_logo),
+                painter = painterResource(id = R.drawable.logo),
                 "Logo"
+            )
+            Text(
+                "ActivMotiv",
+                fontFamily = FontFamily(Font(R.font.bulorounded_black)),
+                fontSize = 40.sp
             )
             Button(
                 onClick = {onSelect(true)}
