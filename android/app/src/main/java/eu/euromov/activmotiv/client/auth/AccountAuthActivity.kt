@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -86,15 +87,15 @@ fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit
             var password by rememberSaveable { mutableStateOf("") }
             Text(
                 fontSize = 35.sp,
-                text = if (register) "Création de compte" else "Connexion"
+                text = stringResource(if (register) R.string.creation else R.string.connection)
             )
             TextField(
-                label = {Text("ID")},
+                label = {Text(stringResource(R.string.id))},
                 value = username,
                 onValueChange = { username = it }
             )
             TextField(
-                label = {Text("Mot de passe")},
+                label = {Text(stringResource(R.string.password))},
                 value = password,
                 onValueChange = { password = it },
                 visualTransformation = PasswordVisualTransformation()
@@ -105,7 +106,7 @@ fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit
                         onSubmit(username, password)
                     }
                 ) {
-                    Text(if (register) "Créer" else "Se connecter")
+                    Text(stringResource(if (register) R.string.create else R.string.connect))
                 }
             }
             else {

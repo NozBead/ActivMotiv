@@ -6,4 +6,13 @@
     <string name="server">http://activmotiv.funetdelire.fr:8080</string>
     <string name="accountType">eu.euromov.activmotiv</string>
     <string name="register_option">REGISTER</string>
+    <string name="profile">Mon Compte</string>
+    <string name="stats">Statistiques</string>
+    <string name="settings">Paramètres</string>
+    <string name="creation">Création de compte</string>
+    <string name="connection">Connexion</string>
+    <string name="password">Mot de passe</string>
+    <string name="id">ID</string>
+    <string name="connect">Se connecter</string>
+    <string name="create">Créer</string>
 </resources>

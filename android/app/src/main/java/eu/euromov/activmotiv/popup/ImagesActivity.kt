@@ -15,7 +15,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.work.*
-import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.client.UploadWorker
 import eu.euromov.activmotiv.database.SaveWorker
