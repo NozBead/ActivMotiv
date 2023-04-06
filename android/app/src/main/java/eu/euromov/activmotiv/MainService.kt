@@ -11,14 +11,14 @@ import android.content.IntentFilter
 import android.os.IBinder
 import androidx.work.*
 import eu.euromov.activmotiv.client.UploadWorker
-import eu.euromov.activmotiv.popup.ScreenOnReceiver
+import eu.euromov.activmotiv.popup.PresenceReceiver
 import java.util.concurrent.TimeUnit
 
 class MainService : Service() {
-    private val receiver = ScreenOnReceiver()
+    private val receiver = PresenceReceiver()
 
     override fun onCreate() {
-        val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+        val filter = IntentFilter(Intent.ACTION_USER_PRESENT)
         applicationContext.registerReceiver(receiver, filter)
     }
 
@@ -51,7 +51,7 @@ class MainService : Service() {
         startForeground(2, notification)
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         scheduleWorker()
         startNotification()
         return START_STICKY

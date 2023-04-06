@@ -5,7 +5,5 @@ import android.content.Intent
 import android.os.IBinder
 
 class AccountService : Service() {
-    override fun onBind(intent: Intent): IBinder {
-        return ClientAuthenticator(context = applicationContext).iBinder
-    }
+    override fun onBind(intent: Intent): IBinder = ClientAuthenticator(context = applicationContext).iBinder
 }

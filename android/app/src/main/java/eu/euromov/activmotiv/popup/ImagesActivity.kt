@@ -1,6 +1,8 @@
 package eu.euromov.activmotiv.popup
 
 import android.os.Bundle
+import android.os.PersistableBundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -21,6 +23,7 @@ import eu.euromov.activmotiv.database.SaveWorker
 
 class ImagesActivity : ComponentActivity() {
     private var exposureTime : Long = 0
+    private var skip = false
 
     private fun startExposureClock() {
         exposureTime = System.currentTimeMillis()
@@ -53,7 +56,7 @@ class ImagesActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Log.i("state","create")
         setContent {
             Box(
                 modifier = Modifier
@@ -65,15 +68,42 @@ class ImagesActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.i("state","start")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        skip = true
+        Log.i("state","restart")
+    }
+
     override fun onResume() {
         super.onResume()
+        Log.i("state", "resume")
         startExposureClock()
     }
 
     override fun onPause() {
         super.onPause()
-        val time = stopExposureClock()
-        scheduleSaveWork(time, exposureTime)
+        Log.i("state", "pause")
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i("state", "stop")
+        if (!skip) {
+            val time = stopExposureClock()
+            scheduleSaveWork(time, exposureTime)
+        }
+        skip = false
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i("state", "destroy")
     }
 }
 
