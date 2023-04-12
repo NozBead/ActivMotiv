@@ -1,9 +1,12 @@
 package eu.euromov.activmotiv.config;
 
+import java.time.Duration;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.CacheControl;
 import org.springframework.orm.jpa.AbstractEntityManagerFactoryBean;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -17,6 +20,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import eu.euromov.activmotiv.authentication.ParticipantService;
 import jakarta.persistence.EntityManagerFactory;
@@ -25,8 +33,16 @@ import jakarta.persistence.EntityManagerFactory;
 @EnableWebSecurity
 @ComponentScan(basePackages = "eu.euromov.activmotiv")
 @EnableJpaRepositories(basePackages = "eu.euromov.activmotiv.repository")
-public class ActivMotivConfig {
+@EnableWebMvc
+public class ActivMotivConfig implements WebMvcConfigurer{
 
+	@Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/res/**")
+                .addResourceLocations("classpath:/static/")
+                .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)));
+    }
+	
 	@Bean
 	AbstractEntityManagerFactoryBean entityManagerFactory() {
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();

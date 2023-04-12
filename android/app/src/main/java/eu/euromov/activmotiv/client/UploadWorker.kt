@@ -29,7 +29,7 @@ class UploadWorker (private val appContext: Context, workerParams: WorkerParamet
             null
         ).result.getString(AccountManager.KEY_AUTHTOKEN, null)
 
-        if (token == null || !checkToken(token)) {
+        if (!checkToken(token)){
             am.invalidateAuthToken(applicationContext.getString(R.string.accountType), token)
             token = getToken(account)
         }
