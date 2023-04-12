@@ -18,7 +18,7 @@ public class ImageController {
 	
 	private Log log = LogFactory.getLog(ImageController.class);
 	
-	private String workingDir = System.getProperty("user.dir");
+	private String workingDir = getClass().getResource("/").getPath();
 	private Random rng = new Random();
 	
 	private File positiveDir = new File(workingDir + "/static/positive");
