@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.euromov.activmotiv.model.Photos;
-import jakarta.websocket.server.PathParam;
 
 @RestController
 @RequestMapping(path="/image")
@@ -27,7 +27,7 @@ public class ImageController {
 	}
 	
 	@GetMapping("/{type}")
-	public Photos getPositives(@PathParam("type") String type) {
+	public Photos getPositives(@PathVariable ("type") String type) {
 		return getImages(type);
 	}
 }
