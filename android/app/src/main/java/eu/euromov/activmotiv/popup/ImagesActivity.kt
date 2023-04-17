@@ -6,10 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -110,12 +107,16 @@ fun StackedImages(positive : ImageBitmap, sport : ImageBitmap) {
         Image(
             bitmap = positive,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
             contentDescription = stringResource(id = R.string.wallpaper_desc),
         )
         Image(
             bitmap = sport,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
             contentScale = ContentScale.Crop,
             contentDescription = stringResource(id = R.string.wallpaper_desc),
         )
