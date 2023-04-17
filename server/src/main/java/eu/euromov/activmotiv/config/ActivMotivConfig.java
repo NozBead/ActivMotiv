@@ -39,7 +39,7 @@ public class ActivMotivConfig implements WebMvcConfigurer{
 	@Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/res/**")
-                .addResourceLocations("classpath:/static/")
+                .addResourceLocations("classpath:/res/")
                 .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)));
     }
 	
