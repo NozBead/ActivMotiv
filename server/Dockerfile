@@ -21,6 +21,6 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
-COPY --from=builder /app/activmotiv activmotiv
+COPY --from=builder /app/activmotiv .
 
-CMD java -cp activmotiv org.springframework.boot.loader.JarLauncher
+CMD java -cp . org.springframework.boot.loader.JarLauncher
