@@ -1,65 +1,59 @@
 package eu.euromov.activmotiv.popup
 
-import android.accounts.Account
-import android.accounts.AccountManager
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import eu.euromov.activmotiv.R
-import eu.euromov.activmotiv.database.UnlockDatabase
-import eu.euromov.activmotiv.model.Unlock
+import eu.euromov.activmotiv.client.UploadClient
+import java.io.File
 
-class UploadWorker (private val appContext: Context, workerParams: WorkerParameters)
+class SyncImageWorker (private val appContext: Context, workerParams: WorkerParameters)
     : CoroutineWorker(appContext, workerParams) {
-    private val unlocks = UnlockDatabase.getDatabase(appContext).unlockDao()
     private val client = UploadClient.getClient(appContext.getString(R.string.server))
-    private val am: AccountManager = AccountManager.get(appContext)
 
-    private fun checkToken(token : String): Boolean {
-        return client.check(token).execute().code() == 200
-    }
+    fun download(type : String) : Boolean {
+        val dir = File(appContext.filesDir, type)
+        dir.mkdir()
 
-    private fun getToken(account : Account): String {
-        var token = am.getAuthToken(
-            account,
-            "",
-            null,
-            true,
-            null,
-            null
-        ).result.getString(AccountManager.KEY_AUTHTOKEN, null)
-
-        if (!checkToken(token)){
-            am.invalidateAuthToken(applicationContext.getString(R.string.accountType), token)
-            token = getToken(account)
+        val response = client.getImages(type).execute()
+        if (!response.isSuccessful) {
+            return false
         }
-        return token
-    }
 
-    private fun upload(notSent:List<Unlock>, sessionCookie: String) {
-        for (unlock in notSent) {
-            val response = client.unlock(sessionCookie, unlock).execute()
-            if (response.code() == 200) {
-                unlock.sent = true
-                unlocks.update(unlock)
+        response.body()?.photos?.forEach {
+            val photo = File(dir, it)
+            if (!photo.exists()) {
+                photo.createNewFile()
+                val imageResponse = client.getImage(type, it).execute()
+                if (imageResponse.isSuccessful) {
+                    val body = imageResponse.body()
+                    if (body != null) {
+                        val buffer = ByteArray(1024)
+                        val input = body.byteStream()
+                        val output = photo.outputStream();
+
+                        var read = input.read(buffer)
+                        while (read != -1) {
+                            output.write(buffer, 0, read)
+                            read = input.read(buffer)
+                        }
+                        input.close()
+                        output.close()
+                    }
+                }
             }
         }
+
+        return true
     }
 
     override suspend fun doWork(): Result {
-        val accounts: Array<Account> = am.getAccountsByType(appContext.getString(R.string.accountType))
-        if(accounts.isEmpty()) {
+        val sport = download("sport");
+        val positive = download("positive");
+
+        if (!sport || !positive) {
             return Result.failure()
         }
-        val account = accounts[0]
-
-        val notSent = unlocks.getAllNotSent()
-        if(notSent.isEmpty()) {
-            return Result.success()
-        }
-
-        val token = getToken(account)
-        upload(notSent, token)
 
         return Result.success()
     }

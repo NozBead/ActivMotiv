@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.work.*
 import eu.euromov.activmotiv.client.UploadWorker
 import eu.euromov.activmotiv.popup.PresenceReceiver
+import eu.euromov.activmotiv.popup.SyncImageWorker
 import java.util.concurrent.TimeUnit
 
 class MainService : Service() {
@@ -22,16 +23,22 @@ class MainService : Service() {
         applicationContext.registerReceiver(receiver, filter)
     }
 
-    private fun scheduleWorker() {
+    private fun scheduleWorkers() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val uploadWorkRequest = PeriodicWorkRequestBuilder<UploadWorker>(15, TimeUnit.MINUTES)
+        val syncWorkRequest = PeriodicWorkRequestBuilder<SyncImageWorker>(3, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+        val uploadWorkRequest = PeriodicWorkRequestBuilder<UploadWorker>(20, TimeUnit.MINUTES)
             .setConstraints(constraints)
             .build()
         WorkManager
             .getInstance(applicationContext)
-            .enqueueUniquePeriodicWork("Upload to server", ExistingPeriodicWorkPolicy.KEEP, uploadWorkRequest)
+            .enqueueUniquePeriodicWork("Upload to server", ExistingPeriodicWorkPolicy.UPDATE, uploadWorkRequest)
+        WorkManager
+            .getInstance(applicationContext)
+            .enqueueUniquePeriodicWork("Sync images", ExistingPeriodicWorkPolicy.UPDATE, syncWorkRequest)
     }
 
     private fun startNotification() {
@@ -52,7 +59,7 @@ class MainService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        scheduleWorker()
+        scheduleWorkers()
         startNotification()
         return START_STICKY
     }

@@ -1,5 +1,6 @@
 package eu.euromov.activmotiv.popup
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,14 +11,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.work.*
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.client.UploadWorker
 import eu.euromov.activmotiv.database.SaveWorker
+import java.io.File
+import kotlin.random.Random
 
 class ImagesActivity : ComponentActivity() {
     private var exposureTime : Long = 0
@@ -55,12 +60,22 @@ class ImagesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val positives = File(applicationContext.filesDir, "positive").listFiles()
+            val sports = File(applicationContext.filesDir, "sport").listFiles()
+
+            val rng = Random.Default
+            val positive = BitmapFactory.decodeStream(positives[rng.nextInt(positives.size)].inputStream())
+            val sport = BitmapFactory.decodeStream(sports[rng.nextInt(sports.size)].inputStream())
+            rng.nextInt()
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable { finish() }
             ) {
-                StackedImages()
+                StackedImages(
+                    positive.asImageBitmap(),
+                    sport.asImageBitmap()
+                )
             }
         }
     }
@@ -86,19 +101,20 @@ class ImagesActivity : ComponentActivity() {
 }
 
 @Composable
-fun StackedImages() {
+fun StackedImages(positive : ImageBitmap, sport : ImageBitmap) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceEvenly
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.chien),
+            bitmap = positive,
             contentScale = ContentScale.Crop,
             modifier = Modifier.weight(1f),
             contentDescription = stringResource(id = R.string.wallpaper_desc),
         )
         Image(
-            painter = painterResource(id = R.drawable.sport),
+            bitmap = sport,
             modifier = Modifier.weight(1f),
             contentScale = ContentScale.Crop,
             contentDescription = stringResource(id = R.string.wallpaper_desc),

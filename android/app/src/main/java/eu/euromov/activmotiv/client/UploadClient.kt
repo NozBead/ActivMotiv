@@ -1,14 +1,13 @@
 package eu.euromov.activmotiv.client
 
+import eu.euromov.activmotiv.model.Images
 import eu.euromov.activmotiv.model.Unlock
 import eu.euromov.activmotiv.model.User
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
+import retrofit2.http.*
 
 
 interface UploadClient {
@@ -40,4 +39,10 @@ interface UploadClient {
 
     @POST("unlock")
     fun unlock(@Header("Cookie") auth : String, @Body unlock : Unlock): Call<Unit>
+
+    @GET("image/{type}")
+    fun getImages(@Path("type") type : String): Call<Images>
+
+    @GET("res/{type}/{image}")
+    fun getImage(@Path("type") type : String, @Path("image") image : String) : Call<ResponseBody>
 }
