@@ -5,6 +5,7 @@ import android.accounts.AccountManager
 import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.List
@@ -34,11 +36,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
@@ -54,6 +59,7 @@ import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.io.File
 
 class MainActivity : ComponentActivity() {
 
@@ -87,6 +93,7 @@ class MainActivity : ComponentActivity() {
         applicationContext.startForegroundService(serviceIntent)
         val am = AccountManager.get(applicationContext)
         val dao = UnlockDatabase.getDatabase(applicationContext).unlockDao()
+        val files = File(applicationContext.filesDir, "positive").listFiles()
 
         setContent {
             ActivMotivTheme {
@@ -112,7 +119,10 @@ class MainActivity : ComponentActivity() {
                         val account = am.accounts[0]
                         Main(
                             account,
-                            dao.getStat()
+                            dao.getStat(),
+                            files
+                                .map { BitmapFactory.decodeStream(it.inputStream()).asImageBitmap() }
+                                .toList()
                         ) {
                             connected = false
                             removeAccount(account)
@@ -132,7 +142,7 @@ sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVecto
 }
 
 @Composable
-fun Main(account: Account, stats: Stats, onDisconnect: () -> Unit) {
+fun Main(account: Account, stats: Stats, images : List<ImageBitmap>, onDisconnect: () -> Unit) {
     val navController = rememberNavController()
     var selectedItem by remember { mutableStateOf(-1) }
     val items = listOf(Screen.Profile, Screen.Stats, Screen.Settings)
@@ -142,7 +152,7 @@ fun Main(account: Account, stats: Stats, onDisconnect: () -> Unit) {
             composable(Screen.Profile.route) { Profile(account, onDisconnect) }
             composable(Screen.Welcome.route) { Hello(account) }
             composable(Screen.Stats.route) { Stats(stats) }
-            composable(Screen.Settings.route) { Settings() }
+            composable(Screen.Settings.route) { Settings(images) }
         }
         NavigationBar {
             items.forEachIndexed { index, item ->
@@ -190,6 +200,7 @@ fun Hello(account : Account) {
             )
             Text(
                 fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
                 text = "Bonjour " + account.name
             )
         }
@@ -208,7 +219,8 @@ fun Header(title : String) {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.logo),
-                "Logo"
+                "Logo",
+                modifier = Modifier.size(30.dp)
             )
             Text(
                 fontSize = 20.sp,
@@ -218,6 +230,7 @@ fun Header(title : String) {
         }
         Text(
             fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
             text = title
         )
     }
