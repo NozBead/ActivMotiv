@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "ActivMotiv"
-include ':app'
+include(":app")

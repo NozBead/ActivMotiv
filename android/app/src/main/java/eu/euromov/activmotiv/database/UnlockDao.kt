@@ -11,6 +11,9 @@ interface UnlockDao {
     @Query("SELECT * FROM unlock WHERE sent = 0")
     fun getAllNotSent() : List<Unlock>
 
+    @Query("SELECT count(*) FROM unlock GROUP BY date(time, 'unixepoch')")
+    fun getUnlockByDay() : List<Int>
+
     @Insert
     fun insert(vararg unlock : Unlock)
 

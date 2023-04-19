@@ -2,7 +2,10 @@ package eu.euromov.activmotiv.client.auth
 
 import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
+import android.content.Intent
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import android.os.Parcelable
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,12 +28,16 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class AccountAuthActivity : ComponentActivity() {
+    private inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? = when {
+        SDK_INT >= 33 -> getParcelableExtra(key, T::class.java)
+        else -> @Suppress("DEPRECATION") getParcelableExtra(key) as? T
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val register = intent.extras?.getBoolean(applicationContext.getString(R.string.register_option)) ?: true
-        val response : AccountAuthenticatorResponse? = intent.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
+        val response : AccountAuthenticatorResponse? = intent.parcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
         val authenticator = ClientAuthenticator(applicationContext)
         response?.onRequestContinued()
         setContent {

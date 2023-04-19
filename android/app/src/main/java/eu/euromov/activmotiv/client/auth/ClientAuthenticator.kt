@@ -75,7 +75,7 @@ class ClientAuthenticator(val context: Context) : AbstractAccountAuthenticator(c
         val result = client.login(basic).execute()
 
         return if (result.code() == 200) {
-            createTokenResponse(result.headers().get("Set-Cookie"), account)
+            createTokenResponse(result.headers()["Set-Cookie"], account)
         } else {
             Bundle()
         }
