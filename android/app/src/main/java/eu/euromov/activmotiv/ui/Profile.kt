@@ -1,0 +1,70 @@
+package eu.euromov.activmotiv.ui
+
+import android.accounts.Account
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import eu.euromov.activmotiv.R
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Profile(account : Account, onDisconnect: () -> Unit) {
+    Page(stringResource(id = R.string.profile)) {
+        var showConfirm by remember { mutableStateOf(false) }
+        if (!showConfirm) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(50.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                TextField(
+                    account.name,
+                    {},
+                    label = { Text(stringResource(R.string.id)) },
+                    readOnly = true
+                )
+                TextField(
+                    "Mot de passe",
+                    {},
+                    label = { Text(stringResource(R.string.password)) },
+                    readOnly = true
+                )
+                Button(
+                    onClick = { showConfirm = true }
+                ) {
+                    Text(stringResource(R.string.disconnect))
+                }
+            }
+        }
+        else {
+            AlertDialog (
+                text = {
+                    Text("Voulez vous vraiment vous déconnecter?")
+                },
+                confirmButton = {
+                    Button(onClick = onDisconnect) {
+                        Text("Confirmer")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = {showConfirm = false}) {
+                        Text("Annuler")
+                    }
+                },
+                onDismissRequest = {showConfirm = false}
+            )
+        }
+    }
+}

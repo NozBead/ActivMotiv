@@ -1,4 +1,4 @@
-package eu.euromov.activmotiv
+package eu.euromov.activmotiv.ui
 
 import android.accounts.Account
 import android.accounts.AccountManager
@@ -13,14 +13,25 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -35,6 +46,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import eu.euromov.activmotiv.MainService
+import eu.euromov.activmotiv.R
+import eu.euromov.activmotiv.database.UnlockDatabase
+import eu.euromov.activmotiv.model.Stats
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -56,17 +71,27 @@ class MainActivity : ComponentActivity() {
             null)
     }
 
+    private fun removeAccount(account : Account) {
+        val am = AccountManager.get(applicationContext)
+        am.removeAccount(
+            account,
+            this,
+            null,
+            null
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val serviceIntent = Intent(applicationContext, MainService::class.java)
         applicationContext.startForegroundService(serviceIntent)
+        val am = AccountManager.get(applicationContext)
+        val dao = UnlockDatabase.getDatabase(applicationContext).unlockDao()
 
         setContent {
             ActivMotivTheme {
                 Surface {
-                    val am = AccountManager.get(applicationContext)
                     val accounts = am.getAccountsByType(applicationContext.getString(R.string.accountType))
-
                     var connected by rememberSaveable { mutableStateOf(accounts.isNotEmpty()) }
 
                     if (!connected) {
@@ -85,7 +110,13 @@ class MainActivity : ComponentActivity() {
                         }
                     } else {
                         val account = am.accounts[0]
-                        Main(account)
+                        Main(
+                            account,
+                            dao.getStat()
+                        ) {
+                            connected = false
+                            removeAccount(account)
+                        }
                     }
                 }
             }
@@ -95,20 +126,22 @@ class MainActivity : ComponentActivity() {
 
 sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVector) {
     object Profile : Screen("profile", R.string.profile, Icons.Filled.AccountBox)
+    object Welcome : Screen("welcome", R.string.welcome, Icons.Filled.AccountBox)
     object Stats : Screen("stats", R.string.stats, Icons.Filled.List)
     object Settings : Screen("settings", R.string.settings, Icons.Filled.Settings)
 }
 
 @Composable
-fun Main(account: Account) {
+fun Main(account: Account, stats: Stats, onDisconnect: () -> Unit) {
     val navController = rememberNavController()
-    var selectedItem by remember { mutableStateOf(0) }
+    var selectedItem by remember { mutableStateOf(-1) }
     val items = listOf(Screen.Profile, Screen.Stats, Screen.Settings)
 
     Column {
-        NavHost(navController, startDestination = Screen.Profile.route, modifier = Modifier.weight(1f)) {
-            composable(Screen.Profile.route) { Hello(account) }
-            composable(Screen.Stats.route) { Stats() }
+        NavHost(navController, startDestination = Screen.Welcome.route, modifier = Modifier.weight(1f)) {
+            composable(Screen.Profile.route) { Profile(account, onDisconnect) }
+            composable(Screen.Welcome.route) { Hello(account) }
+            composable(Screen.Stats.route) { Stats(stats) }
             composable(Screen.Settings.route) { Settings() }
         }
         NavigationBar {
@@ -157,20 +190,53 @@ fun Hello(account : Account) {
             )
             Text(
                 fontSize = 30.sp,
-                text = "Bonjour "  + account.name)
+                text = "Bonjour " + account.name
+            )
         }
     }
-
 }
 
 @Composable
-fun Stats() {
-
+fun Header(title : String) {
+    Column (
+        Modifier.padding(top = 20.dp, bottom = 60.dp),
+        verticalArrangement = Arrangement.spacedBy(60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                "Logo"
+            )
+            Text(
+                fontSize = 20.sp,
+                fontFamily = FontFamily(Font(R.font.bulorounded_black)),
+                text = "ActivMotiv"
+            )
+        }
+        Text(
+            fontSize = 30.sp,
+            text = title
+        )
+    }
 }
 
 @Composable
-fun Settings() {
-
+fun Page(title: String, content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Header(title)
+            content()
+        }
+    }
 }
 
 @Composable
@@ -196,12 +262,12 @@ fun FirstTime(onSelect: (Boolean) -> Unit) {
             Button(
                 onClick = {onSelect(true)}
             ) {
-                Text("Créer un compte")
+                Text(stringResource(id = R.string.create))
             }
             Button(
                 onClick = {onSelect(false)}
             ) {
-                Text("Se connecter")
+                Text(stringResource(id = R.string.connect))
             }
         }
     }

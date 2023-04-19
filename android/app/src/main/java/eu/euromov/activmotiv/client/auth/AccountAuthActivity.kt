@@ -14,14 +14,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
+import eu.euromov.activmotiv.ui.Page
 import eu.euromov.activmotiv.R
+import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -82,9 +81,9 @@ class AccountAuthActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+    Page(
+        stringResource(if (register) R.string.creation else R.string.connection
+        )
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -92,10 +91,6 @@ fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit
         ) {
             var username by rememberSaveable { mutableStateOf("") }
             var password by rememberSaveable { mutableStateOf("") }
-            Text(
-                fontSize = 35.sp,
-                text = stringResource(if (register) R.string.creation else R.string.connection)
-            )
             TextField(
                 label = {Text(stringResource(R.string.id))},
                 value = username,
