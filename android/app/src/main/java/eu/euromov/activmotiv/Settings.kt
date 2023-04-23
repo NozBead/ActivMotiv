@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -95,7 +94,6 @@ fun ImageSettings(image : ImageBitmap) {
             label = { Text(stringResource(id = R.string.comment)) },
             modifier = Modifier
                 .padding(20.dp)
-                .weight(0.2F)
         )
     }
 }

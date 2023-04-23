@@ -64,7 +64,7 @@ val daysLabel = arrayOf("Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim")
 fun Stats(onGetStats: () -> Stats, onGetInfo: () -> Unit, onGetUnlocks: () -> List<UnlockDay>) {
     Box (
         modifier = Modifier
-            .padding(30.dp, 130.dp)
+            .padding(10.dp, 130.dp)
             .fillMaxWidth(),
         contentAlignment = Alignment.TopEnd
     ) {
