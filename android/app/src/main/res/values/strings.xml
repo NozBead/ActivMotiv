@@ -20,4 +20,6 @@
     <string name="unlock_number">Nombre total de déverouillages</string>
     <string name="total_exposure">Temps total d\'exposition</string>
     <string name="seconds">secondes</string>
+    <string name="comment">Commentaire</string>
+    <string name="infos">Informations</string>
 </resources>

@@ -18,8 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import eu.euromov.activmotiv.Page
 import eu.euromov.activmotiv.R
+import eu.euromov.activmotiv.TitledPage
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -81,7 +81,7 @@ class AccountAuthActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit) {
-    Page(
+    TitledPage(
         stringResource(if (register) R.string.creation else R.string.connection
         )
     ) {

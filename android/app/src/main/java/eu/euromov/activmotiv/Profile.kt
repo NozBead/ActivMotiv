@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Profile(account : Account, onDisconnect: () -> Unit) {
-    Page(stringResource(id = R.string.profile)) {
+    TitledPage(stringResource(id = R.string.profile)) {
         var showConfirm by remember { mutableStateOf(false) }
         if (showConfirm) {
             AlertDialog (

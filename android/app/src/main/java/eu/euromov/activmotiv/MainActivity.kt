@@ -14,15 +14,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -38,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -48,9 +49,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import eu.euromov.activmotiv.database.UnlockDatabase
 import eu.euromov.activmotiv.model.Stats
 import eu.euromov.activmotiv.model.UnlockDay
@@ -65,7 +68,7 @@ import java.time.temporal.ChronoField
 
 class MainActivity : ComponentActivity() {
 
-    private fun requestAddAccount(register : Boolean) : AccountManagerFuture<Bundle> {
+    private fun requestAddAccount(register: Boolean): AccountManagerFuture<Bundle> {
         val am = AccountManager.get(applicationContext)
         val options = Bundle()
         options.putBoolean(applicationContext.getString(R.string.register_option), register)
@@ -76,10 +79,11 @@ class MainActivity : ComponentActivity() {
             options,
             this,
             null,
-            null)
+            null
+        )
     }
 
-    private fun addAccount(register : Boolean, onSuccess: () -> Unit) {
+    private fun addAccount(register: Boolean, onSuccess: () -> Unit) {
         val addJob = lifecycleScope.async(Dispatchers.IO) {
             requestAddAccount(register).result
         }
@@ -93,7 +97,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun removeAccount(account : Account) {
+    private fun removeAccount(account: Account) {
         val am = AccountManager.get(applicationContext)
         am.removeAccount(
             account,
@@ -103,12 +107,12 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun getStats() : Stats {
+    private fun getStats(): Stats {
         val dao = UnlockDatabase.getDatabase(applicationContext).unlockDao()
         return dao.getStat()
     }
 
-    private fun getUnlocks() : List<UnlockDay> {
+    private fun getUnlocks(): List<UnlockDay> {
         val dao = UnlockDatabase.getDatabase(applicationContext).unlockDao()
         val weekStart = LocalDate.now().with(ChronoField.DAY_OF_WEEK, 1).atStartOfDay()
         val offset = ZoneOffset.systemDefault().rules.getOffset(weekStart)
@@ -116,7 +120,7 @@ class MainActivity : ComponentActivity() {
         return dao.getUnlockByDay(weekStart.toEpochSecond(offset))
     }
 
-    private fun getImages() : List<ImageBitmap> {
+    private fun getImages(): List<ImageBitmap> {
         val files = File(applicationContext.filesDir, "positive").listFiles()
         return files?.map { BitmapFactory.decodeStream(it.inputStream()).asImageBitmap() }?.toList()
             ?: listOf()
@@ -131,7 +135,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             ActivMotivTheme {
                 Surface {
-                    val accounts = am.getAccountsByType(applicationContext.getString(R.string.accountType))
+                    val accounts =
+                        am.getAccountsByType(applicationContext.getString(R.string.accountType))
                     var connected by rememberSaveable { mutableStateOf(accounts.isNotEmpty()) }
 
                     if (!connected) {
@@ -158,25 +163,37 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVector) {
-    object Profile : Screen("profile", R.string.profile, Icons.Filled.AccountBox)
-    object Welcome : Screen("welcome", R.string.welcome, Icons.Filled.AccountBox)
-    object Stats : Screen("stats", R.string.stats, Icons.Filled.List)
-    object Settings : Screen("settings", R.string.settings, Icons.Filled.Settings)
-}
-
 @Composable
 fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>, onGetImages: () -> List<ImageBitmap>, onDisconnect: () -> Unit) {
     val navController = rememberNavController()
     var selectedItem by remember { mutableStateOf(-1) }
     val items = listOf(Screen.Profile, Screen.Stats, Screen.Settings)
 
+    var lastFiles = listOf<ImageBitmap>()
     Column {
         NavHost(navController, startDestination = Screen.Welcome.route, modifier = Modifier.weight(1f)) {
+            val navToInfos = {navController.navigate(Screen.Infos.route)}
+            composable(Screen.Infos.route) { Infos() }
             composable(Screen.Profile.route) { Profile(account, onDisconnect) }
-            composable(Screen.Welcome.route) { Hello(account) }
-            composable(Screen.Stats.route) { Stats(onGetStats, onGetUnlocks) }
-            composable(Screen.Settings.route) { Settings(onGetImages) }
+            composable(Screen.Welcome.route) {Hello( account, navToInfos) }
+            composable(Screen.Stats.route) { Stats(onGetStats, navToInfos, onGetUnlocks) }
+            composable(Screen.Settings.route) {
+                Settings(
+                    {
+                        lastFiles=onGetImages()
+                        lastFiles
+                    },
+                    {
+                        navController.navigate(Screen.ImageSettings.route + "/" + it)
+                    })
+            }
+            composable(
+                Screen.ImageSettings.route + "/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt("id")
+                ImageSettings(lastFiles[id!!])
+            }
         }
         NavigationBar {
             items.forEachIndexed { index, item ->
@@ -208,60 +225,78 @@ fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<Unl
 }
 
 @Composable
-fun Hello(account : Account) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+fun Hello(account : Account, onGetInfo: () -> Unit) {
+    Column {
+        Box(
+            modifier = Modifier
+                .weight(1F)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.TopEnd
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                "Logo"
-            )
-            Text(
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                text = "Bonjour " + account.name
-            )
+            FloatingActionButton(
+                onGetInfo,
+                modifier = Modifier.padding(60.dp)
+            ) {
+                Icon(Icons.Filled.Info, "Info")
+            }
+        }
+        Spacer(modifier = Modifier.padding(40.dp))
+        Box(
+            modifier = Modifier
+                .weight(2F)
+                .fillMaxSize(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    "Logo"
+                )
+                Text(
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    text = "Bonjour " + account.name
+                )
+            }
         }
     }
 }
 
 @Composable
-fun Header(title : String) {
-    Column (
-        Modifier.padding(top = 20.dp, bottom = 60.dp),
-        verticalArrangement = Arrangement.spacedBy(30.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                "Logo",
-                modifier = Modifier.size(30.dp)
-            )
-            Text(
-                fontSize = 20.sp,
-                fontFamily = FontFamily(Font(R.font.bulorounded_black)),
-                text = "ActivMotiv"
-            )
-        }
+fun HeaderIcon() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            "Logo",
+            modifier = Modifier.size(30.dp)
+        )
         Text(
-            fontSize = 35.sp,
-            fontWeight = FontWeight.Bold,
-            text = title
+            fontSize = 20.sp,
+            fontFamily = FontFamily(Font(R.font.bulorounded_black)),
+            text = "ActivMotiv"
         )
     }
 }
 
 @Composable
-fun Page(title: String, content: @Composable () -> Unit) {
+fun Header(content: @Composable () -> Unit) {
+    Column (
+        Modifier.padding(top = 20.dp, bottom = 60.dp),
+        verticalArrangement = Arrangement.spacedBy(30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        HeaderIcon()
+        content()
+    }
+}
+
+@Composable
+fun Page(headerContent: @Composable () -> Unit, content: @Composable ColumnScope.() -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -270,10 +305,24 @@ fun Page(title: String, content: @Composable () -> Unit) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Header(title)
+            Header(headerContent)
             content()
         }
     }
+}
+
+@Composable
+fun TitledPage(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Page(
+        {
+            Text(
+                fontSize = 35.sp,
+                fontWeight = FontWeight.Bold,
+                text = title
+            )
+        },
+        content
+    )
 }
 
 @Composable

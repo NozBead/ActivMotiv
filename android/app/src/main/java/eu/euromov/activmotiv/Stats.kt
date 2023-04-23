@@ -2,15 +2,24 @@ package eu.euromov.activmotiv
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -27,8 +36,9 @@ import eu.euromov.activmotiv.model.Stats
 import eu.euromov.activmotiv.model.UnlockDay
 
 @Composable
-fun Stat(title : String, value : String , unit : String, modifier : Modifier = Modifier) {
+fun Stat(title : String, value : String , unit : String, colors: CardColors, modifier : Modifier = Modifier) {
     Card(
+        colors = colors,
         modifier = modifier.padding(10.dp)
     ){
         Column(
@@ -51,8 +61,20 @@ val daysLabel = arrayOf("Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim")
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
-fun Stats(onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>) {
-    Page(stringResource(id = R.string.stats)) {
+fun Stats(onGetStats: () -> Stats, onGetInfo: () -> Unit, onGetUnlocks: () -> List<UnlockDay>) {
+    Box (
+        modifier = Modifier
+            .padding(30.dp, 130.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        FloatingActionButton(
+            onGetInfo
+        ) {
+            Icon(Icons.Filled.Info, "Info")
+        }
+    }
+    TitledPage(stringResource(id = R.string.stats)) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         )
@@ -62,6 +84,10 @@ fun Stats(onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>) {
                 stringResource(id = R.string.unlock_number),
                 stats.unlockNumber.toString(),
                 "",
+                CardDefaults.cardColors(
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    MaterialTheme.colorScheme.onSecondaryContainer
+                ),
                 modifier = Modifier
                     .weight(1f),
             )
@@ -70,13 +96,17 @@ fun Stats(onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>) {
                 stringResource(id = R.string.total_exposure),
                 (stats.totalExposure.toFloat() / 1000f).toString(),
                 stringResource(id = R.string.seconds),
+                CardDefaults.cardColors(
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 modifier = Modifier
                     .weight(1f)
             )
         }
         val unlocks = remember {onGetUnlocks()}
         val textMeasurer = rememberTextMeasurer()
-        val color = MaterialTheme.colorScheme.secondary
+        val color = MaterialTheme.colorScheme.onBackground
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
