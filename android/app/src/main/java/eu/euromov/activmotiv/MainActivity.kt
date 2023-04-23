@@ -65,7 +65,7 @@ import java.time.temporal.ChronoField
 
 class MainActivity : ComponentActivity() {
 
-    private fun addAccount(register : Boolean) : AccountManagerFuture<Bundle> {
+    private fun requestAddAccount(register : Boolean) : AccountManagerFuture<Bundle> {
         val am = AccountManager.get(applicationContext)
         val options = Bundle()
         options.putBoolean(applicationContext.getString(R.string.register_option), register)
@@ -77,6 +77,20 @@ class MainActivity : ComponentActivity() {
             this,
             null,
             null)
+    }
+
+    private fun addAccount(register : Boolean, onSuccess: () -> Unit) {
+        val addJob = lifecycleScope.async(Dispatchers.IO) {
+            requestAddAccount(register).result
+        }
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                addJob.await()
+                onSuccess()
+            } catch (e: AuthenticatorException) {
+                Log.e("Add account", e.stackTraceToString())
+            }
+        }
     }
 
     private fun removeAccount(account : Account) {
@@ -108,10 +122,6 @@ class MainActivity : ComponentActivity() {
             ?: listOf()
     }
 
-    private fun getAccountInfo() {
-
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val serviceIntent = Intent(applicationContext, MainService::class.java)
@@ -126,16 +136,8 @@ class MainActivity : ComponentActivity() {
 
                     if (!connected) {
                         FirstTime {
-                            val addJob = lifecycleScope.async(Dispatchers.IO) {
-                                addAccount(it).result
-                            }
-                            lifecycleScope.launch(Dispatchers.Main) {
-                                try {
-                                    addJob.await()
-                                    connected = true
-                                } catch (e: AuthenticatorException) {
-                                    Log.e("Add account", e.stackTraceToString())
-                                }
+                            addAccount(it) {
+                                connected = true
                             }
                         }
                     } else {
