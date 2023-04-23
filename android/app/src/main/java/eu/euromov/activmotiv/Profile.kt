@@ -1,4 +1,4 @@
-package eu.euromov.activmotiv.ui
+package eu.euromov.activmotiv
 
 import android.accounts.Account
 import androidx.compose.foundation.layout.Arrangement
@@ -16,39 +16,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.euromov.activmotiv.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Profile(account : Account, onDisconnect: () -> Unit) {
     Page(stringResource(id = R.string.profile)) {
         var showConfirm by remember { mutableStateOf(false) }
-        if (!showConfirm) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(50.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                TextField(
-                    account.name,
-                    {},
-                    label = { Text(stringResource(R.string.id)) },
-                    readOnly = true
-                )
-                TextField(
-                    "Mot de passe",
-                    {},
-                    label = { Text(stringResource(R.string.password)) },
-                    readOnly = true
-                )
-                Button(
-                    onClick = { showConfirm = true }
-                ) {
-                    Text(stringResource(R.string.disconnect))
-                }
-            }
-        }
-        else {
+        if (showConfirm) {
             AlertDialog (
                 text = {
                     Text("Voulez vous vraiment vous déconnecter?")
@@ -65,6 +39,29 @@ fun Profile(account : Account, onDisconnect: () -> Unit) {
                 },
                 onDismissRequest = {showConfirm = false}
             )
+        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(50.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            TextField(
+                account.name,
+                {},
+                label = { Text(stringResource(R.string.id)) },
+                readOnly = true
+            )
+            TextField(
+                "Mot de passe",
+                {},
+                label = { Text(stringResource(R.string.password)) },
+                readOnly = true
+            )
+            Button(
+                onClick = { showConfirm = true }
+            ) {
+                Text(stringResource(R.string.disconnect))
+            }
         }
     }
 }

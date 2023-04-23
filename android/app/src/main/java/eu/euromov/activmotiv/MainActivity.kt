@@ -1,4 +1,4 @@
-package eu.euromov.activmotiv.ui
+package eu.euromov.activmotiv
 
 import android.accounts.Account
 import android.accounts.AccountManager
@@ -51,15 +51,17 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import eu.euromov.activmotiv.MainService
-import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.database.UnlockDatabase
 import eu.euromov.activmotiv.model.Stats
+import eu.euromov.activmotiv.model.UnlockDay
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.io.File
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.temporal.ChronoField
 
 class MainActivity : ComponentActivity() {
 
@@ -87,13 +89,34 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun getStats() : Stats {
+        val dao = UnlockDatabase.getDatabase(applicationContext).unlockDao()
+        return dao.getStat()
+    }
+
+    private fun getUnlocks() : List<UnlockDay> {
+        val dao = UnlockDatabase.getDatabase(applicationContext).unlockDao()
+        val weekStart = LocalDate.now().with(ChronoField.DAY_OF_WEEK, 1).atStartOfDay()
+        val offset = ZoneOffset.systemDefault().rules.getOffset(weekStart)
+        Log.i("temps", weekStart.toEpochSecond(offset).toString())
+        return dao.getUnlockByDay(weekStart.toEpochSecond(offset))
+    }
+
+    private fun getImages() : List<ImageBitmap> {
+        val files = File(applicationContext.filesDir, "positive").listFiles()
+        return files?.map { BitmapFactory.decodeStream(it.inputStream()).asImageBitmap() }?.toList()
+            ?: listOf()
+    }
+
+    private fun getAccountInfo() {
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val serviceIntent = Intent(applicationContext, MainService::class.java)
         applicationContext.startForegroundService(serviceIntent)
         val am = AccountManager.get(applicationContext)
-        val dao = UnlockDatabase.getDatabase(applicationContext).unlockDao()
-        val files = File(applicationContext.filesDir, "positive").listFiles()
 
         setContent {
             ActivMotivTheme {
@@ -119,10 +142,9 @@ class MainActivity : ComponentActivity() {
                         val account = am.accounts[0]
                         Main(
                             account,
-                            dao.getStat(),
-                            files
-                                .map { BitmapFactory.decodeStream(it.inputStream()).asImageBitmap() }
-                                .toList()
+                            this::getStats,
+                            this::getUnlocks,
+                            this::getImages
                         ) {
                             connected = false
                             removeAccount(account)
@@ -142,7 +164,7 @@ sealed class Screen(val route: String, val resourceId: Int, val icon: ImageVecto
 }
 
 @Composable
-fun Main(account: Account, stats: Stats, images : List<ImageBitmap>, onDisconnect: () -> Unit) {
+fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>, onGetImages: () -> List<ImageBitmap>, onDisconnect: () -> Unit) {
     val navController = rememberNavController()
     var selectedItem by remember { mutableStateOf(-1) }
     val items = listOf(Screen.Profile, Screen.Stats, Screen.Settings)
@@ -151,8 +173,8 @@ fun Main(account: Account, stats: Stats, images : List<ImageBitmap>, onDisconnec
         NavHost(navController, startDestination = Screen.Welcome.route, modifier = Modifier.weight(1f)) {
             composable(Screen.Profile.route) { Profile(account, onDisconnect) }
             composable(Screen.Welcome.route) { Hello(account) }
-            composable(Screen.Stats.route) { Stats(stats) }
-            composable(Screen.Settings.route) { Settings(images) }
+            composable(Screen.Stats.route) { Stats(onGetStats, onGetUnlocks) }
+            composable(Screen.Settings.route) { Settings(onGetImages) }
         }
         NavigationBar {
             items.forEachIndexed { index, item ->
@@ -211,7 +233,7 @@ fun Hello(account : Account) {
 fun Header(title : String) {
     Column (
         Modifier.padding(top = 20.dp, bottom = 60.dp),
-        verticalArrangement = Arrangement.spacedBy(60.dp),
+        verticalArrangement = Arrangement.spacedBy(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
             ) {
         Row(
@@ -229,7 +251,7 @@ fun Header(title : String) {
             )
         }
         Text(
-            fontSize = 30.sp,
+            fontSize = 35.sp,
             fontWeight = FontWeight.Bold,
             text = title
         )

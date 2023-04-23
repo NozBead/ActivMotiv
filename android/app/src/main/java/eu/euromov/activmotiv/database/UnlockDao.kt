@@ -6,14 +6,15 @@ import androidx.room.Query
 import androidx.room.Update
 import eu.euromov.activmotiv.model.Stats
 import eu.euromov.activmotiv.model.Unlock
+import eu.euromov.activmotiv.model.UnlockDay
 
 @Dao
 interface UnlockDao {
     @Query("SELECT * FROM unlock WHERE sent = 0")
     fun getAllNotSent() : List<Unlock>
 
-    @Query("SELECT count(*) FROM unlock GROUP BY date(time, 'unixepoch')")
-    fun getUnlockByDay() : List<Int>
+    @Query("SELECT strftime('%w', time, 'unixepoch', 'localtime') AS dayOfWeek, count(*) AS numberOfUnlocks FROM unlock WHERE time >= :time GROUP BY dayOfWeek")
+    fun getUnlockByDay(time: Long) : List<UnlockDay>
 
     @Query("SELECT count(*) AS unlockNumber, sum(exposureTime) AS totalExposure FROM unlock")
     fun getStat() : Stats

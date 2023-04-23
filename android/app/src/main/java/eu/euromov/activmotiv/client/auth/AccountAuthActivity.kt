@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import eu.euromov.activmotiv.ui.Page
+import eu.euromov.activmotiv.Page
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
