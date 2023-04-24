@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,8 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -49,14 +52,28 @@ fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<Image>, onSelectImag
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             itemsIndexed(onGetImages()) { index, item ->
-                Image(
-                    bitmap = BitmapFactory.decodeByteArray(item.file, 0, item.file.size).asImageBitmap(),
-                    modifier = Modifier
-                        .size(150.dp)
-                        .clickable { onSelectImage(index) },
-                    contentScale = ContentScale.Crop,
-                    contentDescription = stringResource(id = R.string.wallpaper_desc)
-                )
+                Box (
+                    modifier = Modifier.size(150.dp)
+                ) {
+                    Image(
+                        bitmap = BitmapFactory.decodeByteArray(item.file, 0, item.file.size).asImageBitmap(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable { onSelectImage(index) },
+                        contentScale = ContentScale.Crop,
+                        contentDescription = stringResource(id = R.string.wallpaper_desc)
+                    )
+                    if (item.favorite) {
+                        Icon(
+                            Icons.Filled.Favorite,
+                            "fav",
+                            tint = Color(0xFFCE0F0F),
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(5.dp)
+                        )
+                    }
+                }
             }
         }
     }
