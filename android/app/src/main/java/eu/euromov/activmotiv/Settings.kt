@@ -1,5 +1,6 @@
 package eu.euromov.activmotiv
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -24,14 +27,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import eu.euromov.activmotiv.model.Image
 
 @Composable
-fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<ImageBitmap>, onSelectImage: (imageId: Int) -> Unit) {
+fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<Image>, onSelectImage: (imageId: Int) -> Unit) {
     TitledPage(
         "Photos",
         onGetInfo
@@ -43,7 +48,7 @@ fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<ImageBitmap>, onSele
         ) {
             itemsIndexed(onGetImages()) { index, item ->
                 Image(
-                    bitmap = item,
+                    bitmap = BitmapFactory.decodeByteArray(item.file, 0, item.file.size).asImageBitmap(),
                     modifier = Modifier
                         .size(150.dp)
                         .clickable { onSelectImage(index) },
@@ -57,14 +62,14 @@ fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<ImageBitmap>, onSele
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImageSettings(onGetInfo: () -> Unit, image : ImageBitmap) {
+fun ImageSettings(onGetInfo: () -> Unit, onUpdateImage: (image: Image) -> Unit, image : Image) {
     Page(onGetInfo) {
         Image(
             modifier = Modifier
                 .padding(10.dp)
                 .fillMaxWidth()
                 .weight(1F),
-            bitmap = image,
+            bitmap = BitmapFactory.decodeByteArray(image.file, 0, image.file.size).asImageBitmap(),
             contentScale = ContentScale.Crop,
             contentDescription = stringResource(id = R.string.wallpaper_desc)
         )
@@ -73,7 +78,7 @@ fun ImageSettings(onGetInfo: () -> Unit, image : ImageBitmap) {
                 .padding(20.dp)
                 .weight(0.2F)
         ) {
-            var faved by remember { mutableStateOf(false) }
+            var faved by remember { mutableStateOf(image.favorite) }
             Icon(
                 painterResource(id = R.drawable.comment),
                 "fav",
@@ -87,13 +92,30 @@ fun ImageSettings(onGetInfo: () -> Unit, image : ImageBitmap) {
                 modifier = Modifier
                     .weight(1F)
                     .fillMaxSize()
-                    .clickable { faved = !faved }
+                    .clickable {
+                        faved = !faved
+                        image.favorite = faved
+                        onUpdateImage(image)
+                    }
             )
         }
-        var text by remember { mutableStateOf("") }
+        var text by remember { mutableStateOf(image.comment ?: "") }
         TextField(
             text,
-            {text = it},
+
+            {
+                text = it
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    image.comment = text
+                    onUpdateImage(image)
+                    defaultKeyboardAction(ImeAction.Next)
+                }
+            ),
             label = { Text(stringResource(id = R.string.comment)) },
             modifier = Modifier
                 .padding(20.dp)

@@ -5,7 +5,6 @@ import android.accounts.AccountManager
 import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -38,8 +37,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -54,13 +51,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import eu.euromov.activmotiv.database.UnlockDatabase
+import eu.euromov.activmotiv.model.Image
+import eu.euromov.activmotiv.model.ImageType
 import eu.euromov.activmotiv.model.Stats
 import eu.euromov.activmotiv.model.UnlockDay
 import eu.euromov.activmotiv.ui.theme.ActivMotivTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.io.File
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.ChronoField
@@ -119,10 +117,14 @@ class MainActivity : ComponentActivity() {
         return dao.getUnlockByDay(weekStart.toEpochSecond(offset))
     }
 
-    private fun getImages(): List<ImageBitmap> {
-        val files = File(applicationContext.filesDir, "positive").listFiles()
-        return files?.map { BitmapFactory.decodeStream(it.inputStream()).asImageBitmap() }?.toList()
-            ?: listOf()
+    private fun getImages(): List<Image> {
+        val dao = UnlockDatabase.getDatabase(applicationContext).imageDao()
+        return dao.getAllOfType(ImageType.POSITIVE)
+    }
+
+    private fun updateImage(image: Image) {
+        val dao = UnlockDatabase.getDatabase(applicationContext).imageDao()
+        return dao.update(image)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -150,7 +152,8 @@ class MainActivity : ComponentActivity() {
                             account,
                             this::getStats,
                             this::getUnlocks,
-                            this::getImages
+                            this::getImages,
+                            this::updateImage
                         ) {
                             connected = false
                             removeAccount(account)
@@ -163,7 +166,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>, onGetImages: () -> List<ImageBitmap>, onDisconnect: () -> Unit) {
+fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>, onGetImages: () -> List<Image>, onUpdateImages: (image: Image) -> Unit, onDisconnect: () -> Unit) {
     var selectedItem by remember { mutableStateOf(-1) }
     val items = listOf(Screen.Profile, Screen.Stats, Screen.Settings)
 
@@ -173,7 +176,7 @@ fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<Unl
         selectedItem = i
     }
 
-    var lastFiles = listOf<ImageBitmap>()
+    var lastFiles = listOf<Image>()
     Column {
         NavHost(navController, startDestination = Screen.Welcome.route, modifier = Modifier.weight(1f)) {
             val navToInfos = {navController.navigate(Screen.Infos.route)}
@@ -197,7 +200,7 @@ fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<Unl
                 arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) { entry ->
                 val id = entry.arguments?.getInt("id")
-                ImageSettings(navToInfos, lastFiles[id!!])
+                ImageSettings(navToInfos, onUpdateImages, lastFiles[id!!])
             }
         }
         NavigationBar {
@@ -301,7 +304,7 @@ fun Header(onGetInfo: (() -> Unit)?) {
 }
 
 @Composable
-fun Page(onGetInfo: (() -> Unit)? = null, verticalArrangement: Arrangement.Vertical = Arrangement.Top, content: @Composable ColumnScope.() -> Unit, ) {
+fun Page(onGetInfo: (() -> Unit)? = null, verticalArrangement: Arrangement.Vertical = Arrangement.Top, content: @Composable ColumnScope.() -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
