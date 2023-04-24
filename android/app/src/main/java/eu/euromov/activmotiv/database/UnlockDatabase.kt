@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import eu.euromov.activmotiv.model.Image
 import eu.euromov.activmotiv.model.Unlock
 
-@Database(entities = [Unlock::class, Image::class], version = 1)
+@Database(entities = [Unlock::class, Image::class], version = 2)
 abstract class UnlockDatabase : RoomDatabase() {
     companion object {
         @Volatile
