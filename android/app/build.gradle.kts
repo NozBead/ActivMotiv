@@ -14,6 +14,12 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "0.5"
+
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas")
+            }
+        }
     }
 
     compileOptions {
