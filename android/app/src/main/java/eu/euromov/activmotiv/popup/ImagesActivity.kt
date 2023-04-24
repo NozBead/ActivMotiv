@@ -6,7 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,11 +18,16 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import eu.euromov.activmotiv.R
 import eu.euromov.activmotiv.client.UploadWorker
 import eu.euromov.activmotiv.database.SaveWorker
-import java.io.File
+import eu.euromov.activmotiv.database.UnlockDatabase
+import eu.euromov.activmotiv.model.ImageType
 import kotlin.random.Random
 
 class ImagesActivity : ComponentActivity() {
@@ -57,13 +66,15 @@ class ImagesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val positives = File(applicationContext.filesDir, "positive").listFiles()
-            val sports = File(applicationContext.filesDir, "sport").listFiles()
+            val imageDao = UnlockDatabase.getDatabase(applicationContext).imageDao()
+            val positives = imageDao.getAllOfType(ImageType.POSITIVE)
+            val sports = imageDao.getAllOfType(ImageType.SPORT)
 
             val rng = Random.Default
-            val positive = BitmapFactory.decodeStream(positives[rng.nextInt(positives.size)].inputStream())
-            val sport = BitmapFactory.decodeStream(sports[rng.nextInt(sports.size)].inputStream())
-            rng.nextInt()
+            val positiveFile = positives[rng.nextInt(positives.size)].file
+            val positive = BitmapFactory.decodeByteArray(positiveFile, 0, positiveFile.size)
+            val sportFile = sports[rng.nextInt(sports.size)].file
+            val sport = BitmapFactory.decodeByteArray(sportFile, 0, sportFile.size)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
