@@ -26,9 +26,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -60,7 +62,7 @@ fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<Image>, onSelectImag
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ImageSettings(onGetInfo: () -> Unit, onUpdateImage: (image: Image) -> Unit, image : Image) {
     Page(onGetInfo) {
@@ -100,6 +102,7 @@ fun ImageSettings(onGetInfo: () -> Unit, onUpdateImage: (image: Image) -> Unit, 
             )
         }
         var text by remember { mutableStateOf(image.comment ?: "") }
+        val keyboardController = LocalSoftwareKeyboardController.current
         TextField(
             text,
 
@@ -113,7 +116,7 @@ fun ImageSettings(onGetInfo: () -> Unit, onUpdateImage: (image: Image) -> Unit, 
                 onDone = {
                     image.comment = text
                     onUpdateImage(image)
-                    defaultKeyboardAction(ImeAction.Next)
+                    keyboardController?.hide()
                 }
             ),
             label = { Text(stringResource(id = R.string.comment)) },
