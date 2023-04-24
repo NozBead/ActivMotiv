@@ -73,7 +73,7 @@ fun Stats(onGetInfo: () -> Unit, onGetStats: () -> Stats, onGetUnlocks: () -> Li
                     MaterialTheme.colorScheme.onSecondaryContainer
                 ),
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(1F),
             )
 
             Stat(
@@ -85,7 +85,7 @@ fun Stats(onGetInfo: () -> Unit, onGetStats: () -> Stats, onGetUnlocks: () -> Li
                     MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1F)
             )
         }
         val unlocks = remember { onGetUnlocks() }

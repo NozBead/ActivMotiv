@@ -85,7 +85,8 @@ class AccountAuthActivity : ComponentActivity() {
 @Composable
 fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit) {
     TitledPage(
-        stringResource(if (register) R.string.creation else R.string.connection)
+        stringResource(if (register) R.string.creation else R.string.connection),
+        verticalArrangement = Arrangement.Center
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(20.dp),

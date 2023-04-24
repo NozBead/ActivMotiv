@@ -22,7 +22,8 @@ import androidx.compose.ui.unit.dp
 fun Profile(onGetInfo: () -> Unit, account : Account, onDisconnect: () -> Unit) {
     TitledPage(
         stringResource(id = R.string.profile),
-        onGetInfo
+        onGetInfo,
+        verticalArrangement = Arrangement.Center
     ) {
         var showConfirm by remember { mutableStateOf(false) }
         if (showConfirm) {

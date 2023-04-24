@@ -48,7 +48,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -165,9 +164,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>, onGetImages: () -> List<ImageBitmap>, onDisconnect: () -> Unit) {
-    val navController = rememberNavController()
     var selectedItem by remember { mutableStateOf(-1) }
     val items = listOf(Screen.Profile, Screen.Stats, Screen.Settings)
+
+    val navController = rememberNavController()
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        val i = items.map { it.route }.indexOf(destination.route)
+        selectedItem = i
+    }
 
     var lastFiles = listOf<ImageBitmap>()
     Column {
@@ -204,17 +208,9 @@ fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<Unl
                     selected = selectedItem == index,
                     onClick = {
                         selectedItem = index
-                        navController.navigate(item.route) {
-                            // Pop up to the start destination of the graph to
-                            // avoid building up a large stack of destinations
-                            // on the back stack as users select items
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            // Avoid multiple copies of the same destination when
-                            // reselecting the same item
+                        navController.navigate(item.route)
+                        {
                             launchSingleTop = true
-                            // Restore state when reselecting a previously selected item
                             restoreState = true
                         }
 
@@ -305,7 +301,7 @@ fun Header(onGetInfo: (() -> Unit)?) {
 }
 
 @Composable
-fun Page(onGetInfo: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
+fun Page(onGetInfo: (() -> Unit)? = null, verticalArrangement: Arrangement.Vertical = Arrangement.Top, content: @Composable ColumnScope.() -> Unit, ) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
@@ -314,14 +310,20 @@ fun Page(onGetInfo: (() -> Unit)? = null, content: @Composable ColumnScope.() ->
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Header(onGetInfo)
-            content()
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = verticalArrangement
+            ) {
+                content()
+            }
         }
     }
 }
 
 @Composable
-fun TitledPage(title: String, onGetInfo: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
-    Page(onGetInfo) {
+fun TitledPage(title: String, onGetInfo: (() -> Unit)? = null, verticalArrangement: Arrangement.Vertical = Arrangement.Top, content: @Composable ColumnScope.() -> Unit) {
+    Page(onGetInfo, verticalArrangement) {
         Text(
             modifier = Modifier.padding(bottom = 10.dp),
             fontSize = 35.sp,
