@@ -10,11 +10,14 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -82,8 +85,7 @@ class AccountAuthActivity : ComponentActivity() {
 @Composable
 fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit) {
     TitledPage(
-        stringResource(if (register) R.string.creation else R.string.connection
-        )
+        stringResource(if (register) R.string.creation else R.string.connection)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -94,12 +96,23 @@ fun Form(loading: Boolean, register: Boolean, onSubmit: (String, String) -> Unit
             TextField(
                 label = {Text(stringResource(R.string.id))},
                 value = username,
-                onValueChange = { username = it }
+                onValueChange = { username = it },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                )
             )
             TextField(
                 label = {Text(stringResource(R.string.password))},
                 value = password,
                 onValueChange = { password = it },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        onSubmit(username, password)
+                    }
+                ),
                 visualTransformation = PasswordVisualTransformation()
             )
             if (!loading) {

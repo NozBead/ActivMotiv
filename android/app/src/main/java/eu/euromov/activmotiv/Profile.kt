@@ -19,8 +19,11 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Profile(account : Account, onDisconnect: () -> Unit) {
-    TitledPage(stringResource(id = R.string.profile)) {
+fun Profile(onGetInfo: () -> Unit, account : Account, onDisconnect: () -> Unit) {
+    TitledPage(
+        stringResource(id = R.string.profile),
+        onGetInfo
+    ) {
         var showConfirm by remember { mutableStateOf(false) }
         if (showConfirm) {
             AlertDialog (
@@ -41,7 +44,7 @@ fun Profile(account : Account, onDisconnect: () -> Unit) {
             )
         }
         Column(
-            verticalArrangement = Arrangement.spacedBy(50.dp),
+            verticalArrangement = Arrangement.spacedBy(30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 

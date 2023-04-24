@@ -2,24 +2,17 @@ package eu.euromov.activmotiv
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -61,25 +54,16 @@ val daysLabel = arrayOf("Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim")
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
-fun Stats(onGetStats: () -> Stats, onGetInfo: () -> Unit, onGetUnlocks: () -> List<UnlockDay>) {
-    Box (
-        modifier = Modifier
-            .padding(10.dp, 130.dp)
-            .fillMaxWidth(),
-        contentAlignment = Alignment.TopEnd
+fun Stats(onGetInfo: () -> Unit, onGetStats: () -> Stats, onGetUnlocks: () -> List<UnlockDay>) {
+    TitledPage(
+        stringResource(id = R.string.stats),
+        onGetInfo
     ) {
-        FloatingActionButton(
-            onGetInfo
-        ) {
-            Icon(Icons.Filled.Info, "Info")
-        }
-    }
-    TitledPage(stringResource(id = R.string.stats)) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         )
         {
-            val stats = remember {onGetStats()}
+            val stats = remember { onGetStats() }
             Stat(
                 stringResource(id = R.string.unlock_number),
                 stats.unlockNumber.toString(),
@@ -104,12 +88,13 @@ fun Stats(onGetStats: () -> Stats, onGetInfo: () -> Unit, onGetUnlocks: () -> Li
                     .weight(1f)
             )
         }
-        val unlocks = remember {onGetUnlocks()}
+        val unlocks = remember { onGetUnlocks() }
         val textMeasurer = rememberTextMeasurer()
         val color = MaterialTheme.colorScheme.onBackground
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
+                .weight(10F)
                 .padding(10.dp)
         ) {
             val unlockDays = IntArray(7)
@@ -132,8 +117,8 @@ fun Stats(onGetStats: () -> Stats, onGetInfo: () -> Unit, onGetUnlocks: () -> Li
 
             val xScale : Float = (size.width - xOffset) / unlockDays.size
 
-            val barWidth : Float = xScale - ((xScale / unlockDays.size) * 2)
-            val barOffset = barWidth/2
+            val barWidth = 100F
+            val barOffset = (xScale - barWidth) / 2
 
             unlockDays
                 .forEachIndexed { i, number ->
@@ -192,5 +177,9 @@ fun Stats(onGetStats: () -> Stats, onGetInfo: () -> Unit, onGetUnlocks: () -> Li
                 StrokeCap.Round
             )
         }
+        Text(
+            "Nombre d'expositions par jour cette semaine",
+            modifier = Modifier.weight(1F)
+        )
     }
 }

@@ -174,11 +174,12 @@ fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<Unl
         NavHost(navController, startDestination = Screen.Welcome.route, modifier = Modifier.weight(1f)) {
             val navToInfos = {navController.navigate(Screen.Infos.route)}
             composable(Screen.Infos.route) { Infos() }
-            composable(Screen.Profile.route) { Profile(account, onDisconnect) }
-            composable(Screen.Welcome.route) {Hello( account, navToInfos) }
-            composable(Screen.Stats.route) { Stats(onGetStats, navToInfos, onGetUnlocks) }
+            composable(Screen.Profile.route) { Profile(navToInfos, account, onDisconnect) }
+            composable(Screen.Welcome.route) { Hello(navToInfos, account) }
+            composable(Screen.Stats.route) { Stats(navToInfos, onGetStats, onGetUnlocks) }
             composable(Screen.Settings.route) {
                 Settings(
+                    navToInfos,
                     {
                         lastFiles=onGetImages()
                         lastFiles
@@ -192,7 +193,7 @@ fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<Unl
                 arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) { entry ->
                 val id = entry.arguments?.getInt("id")
-                ImageSettings(lastFiles[id!!])
+                ImageSettings(navToInfos, lastFiles[id!!])
             }
         }
         NavigationBar {
@@ -225,7 +226,7 @@ fun Main(account: Account, onGetStats: () -> Stats, onGetUnlocks: () -> List<Unl
 }
 
 @Composable
-fun Hello(account : Account, onGetInfo: () -> Unit) {
+fun Hello(onGetInfo: () -> Unit, account : Account) {
     Column {
         Box(
             modifier = Modifier
@@ -284,45 +285,51 @@ fun HeaderIcon() {
 }
 
 @Composable
-fun Header(content: @Composable () -> Unit) {
-    Column (
-        Modifier.padding(top = 20.dp, bottom = 60.dp),
-        verticalArrangement = Arrangement.spacedBy(30.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+fun Header(onGetInfo: (() -> Unit)?) {
+    Box(
+        modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ){
         HeaderIcon()
-        content()
+        if (onGetInfo != null) {
+            FloatingActionButton(
+                onGetInfo,
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(Icons.Filled.Info, "Info")
+            }
+        }
     }
 }
 
 @Composable
-fun Page(headerContent: @Composable () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+fun Page(onGetInfo: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Header(headerContent)
+            Header(onGetInfo)
             content()
         }
     }
 }
 
 @Composable
-fun TitledPage(title: String, content: @Composable ColumnScope.() -> Unit) {
-    Page(
-        {
-            Text(
-                fontSize = 35.sp,
-                fontWeight = FontWeight.Bold,
-                text = title
-            )
-        },
-        content
-    )
+fun TitledPage(title: String, onGetInfo: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
+    Page(onGetInfo) {
+        Text(
+            modifier = Modifier.padding(bottom = 10.dp),
+            fontSize = 35.sp,
+            fontWeight = FontWeight.Bold,
+            text = title
+        )
+        content()
+    }
 }
 
 @Composable

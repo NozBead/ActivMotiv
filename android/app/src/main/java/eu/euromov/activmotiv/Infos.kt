@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Infos() {
-    Page({}) {
+    Page {
         Text(
             "Blablabla",
             modifier = Modifier

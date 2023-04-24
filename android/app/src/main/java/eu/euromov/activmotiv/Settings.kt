@@ -31,8 +31,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Settings(onGetImages: () -> List<ImageBitmap>, onSelectImage: (imageId: Int) -> Unit) {
-    TitledPage("Photos") {
+fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<ImageBitmap>, onSelectImage: (imageId: Int) -> Unit) {
+    TitledPage(
+        "Photos",
+        onGetInfo
+    ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -54,8 +57,8 @@ fun Settings(onGetImages: () -> List<ImageBitmap>, onSelectImage: (imageId: Int)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImageSettings(image : ImageBitmap) {
-    Page({}) {
+fun ImageSettings(onGetInfo: () -> Unit, image : ImageBitmap) {
+    Page(onGetInfo) {
         Image(
             modifier = Modifier
                 .padding(10.dp)
