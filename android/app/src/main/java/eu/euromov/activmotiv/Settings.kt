@@ -41,6 +41,32 @@ import androidx.compose.ui.unit.dp
 import eu.euromov.activmotiv.model.Image
 
 @Composable
+fun ImageItem(index: Int, image: Image, onSelectImage: (index: Int) -> Unit) {
+    Box (
+        modifier = Modifier.size(150.dp)
+    ) {
+        Image(
+            bitmap = BitmapFactory.decodeByteArray(image.file, 0, image.file.size).asImageBitmap(),
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { onSelectImage(index) },
+            contentScale = ContentScale.Crop,
+            contentDescription = stringResource(id = R.string.wallpaper_desc)
+        )
+        if (image.favorite) {
+            Icon(
+                Icons.Filled.Favorite,
+                "fav",
+                tint = Color(0xFFCE0F0F),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(5.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<Image>, onSelectImage: (imageId: Int) -> Unit) {
     TitledPage(
         "Photos",
@@ -52,28 +78,7 @@ fun Settings(onGetInfo: () -> Unit, onGetImages: () -> List<Image>, onSelectImag
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             itemsIndexed(onGetImages()) { index, item ->
-                Box (
-                    modifier = Modifier.size(150.dp)
-                ) {
-                    Image(
-                        bitmap = BitmapFactory.decodeByteArray(item.file, 0, item.file.size).asImageBitmap(),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable { onSelectImage(index) },
-                        contentScale = ContentScale.Crop,
-                        contentDescription = stringResource(id = R.string.wallpaper_desc)
-                    )
-                    if (item.favorite) {
-                        Icon(
-                            Icons.Filled.Favorite,
-                            "fav",
-                            tint = Color(0xFFCE0F0F),
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(5.dp)
-                        )
-                    }
-                }
+                ImageItem(index, item, onSelectImage)
             }
         }
     }
@@ -122,7 +127,6 @@ fun ImageSettings(onGetInfo: () -> Unit, onUpdateImage: (image: Image) -> Unit, 
         val keyboardController = LocalSoftwareKeyboardController.current
         TextField(
             text,
-
             {
                 text = it
             },
