@@ -35,8 +35,8 @@ public class ParticipantController {
 		Optional<Participant> found = participants.findById(participant.getUsername());
 		// The given username needs to be already added without a password to be created
 		if (found.isEmpty()) {
-			log.info("Unauthorized ID submitted to registration: " + participant.getUsername());
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			log.info("(DISABLED) Unauthorized ID submitted to registration: " + participant.getUsername());
+			//return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		else if (found.get().getPassword() != null) {
 

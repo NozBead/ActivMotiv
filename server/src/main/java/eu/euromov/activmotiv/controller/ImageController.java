@@ -14,10 +14,9 @@ import eu.euromov.activmotiv.model.Photos;
 @RestController
 @RequestMapping(path="/image")
 public class ImageController {
-	private String workingDir = getClass().getResource("/").getPath();
 	
 	private Photos getImages(String type) {
-		File dir = new File(workingDir + "/res/" + type);
+		File dir = new File("res/" + type);
 		Photos photos = new Photos();
 		List<String> images = Stream.of(dir.listFiles())
 			.map(e -> e.getName())
@@ -27,7 +26,7 @@ public class ImageController {
 	}
 	
 	@GetMapping("/{type}")
-	public Photos getPositives(@PathVariable ("type") String type) {
+	public Photos getOfType(@PathVariable ("type") String type) {
 		return getImages(type);
 	}
 }
